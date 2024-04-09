@@ -11,65 +11,66 @@ $JsonContent = @"
 {
     "schemas": ["urn:ietf:params:scim:api:messages:2.0:BulkRequest"],
     "Operations": [
-    {
-        "method": "POST",
-        "bulkId": "897401c2-2de4-4b87-a97f-c02de3bcfc61",
-        "path": "/Users",
-        "data": {
-            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User",
-            "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"],
-            "externalId": "701984",
-            "userName": "dw@ducktales.com",
-            "name": {
-                "formatted": "Darkwing Duck",
-                "familyName": "Duck",
-                "givenName": "Darkwing",
-                "middleName": ""
-                    },
-            "displayName": "Darkwing Duck",
-            "nickName": "DW",
-            "emails": [
-            {
-              "value": "dw@ducktales.com",
-              "type": "work",
-              "primary": true
-            }
-            ],
-            "addresses": [
-            {
-              "type": "work",
-              "streetAddress": "537 Avian Way",
-              "locality": "St. Canard",
-              "region": "Calisota",
-              "postalCode": "",
-              "country": "USA",
-              "formatted": "537 Avian Way\nSt. Canard, Calisota, USA",
-              "primary": true
-            }
-            ],
-            "phoneNumbers": [
-            {
-              "value": "555-555-5555",
-              "type": "work"
-            }
-            ],
-            "userType": "The Masked Mallard",
-            "title": "Terror that Flaps in the Night",
-            "preferredLanguage": "en-US",
-            "locale": "en-US",
-            "timezone": "America/Los_Angeles",
-            "active":true,
-            "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
-                 "employeeNumber": "701984",
-                 "costCenter": "999",
-                 "organization": "Justice Ducks",
-                 "division": "SHUSH",
-                 "department": "Free Lance agents"
+        {
+            "method": "POST",
+            "bulkId": "897401c2-2de4-4b87-a97f-c02de3bcfc61",
+            "path": "/Users",
+            "data": {
+                "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User",
+                "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"],
+                "externalId": "701984",
+                "userName": "dw@ducktales.com",
+                "name": {
+                    "formatted": "Darkwing Duck",
+                    "familyName": "Duck",
+                    "givenName": "Darkwing",
+                    "middleName": ""
+                },
+                "displayName": "Darkwing Duck",
+                "nickName": "DW",
+                "emails": [
+                    {
+                        "value": "dw@ducktales.com",
+                        "type": "work",
+                        "primary": true
+                    }
+                ],
+                "addresses": [
+                    {
+                        "type": "work",
+                        "streetAddress": "537 Avian Way",
+                        "locality": "St. Canard",
+                        "region": "Calisota",
+                        "postalCode": "",
+                        "country": "USA",
+                        "formatted": "537 Avian Way\nSt. Canard, Calisota, USA",
+                        "primary": true
+                    }
+                ],
+                "phoneNumbers": [
+                    {
+                        "value": "555-555-5555",
+                        "type": "work"
+                    }
+                ],
+                "userType": "The Masked Mallard",
+                "title": "Terror that Flaps in the Night",
+                "preferredLanguage": "en-US",
+                "locale": "en-US",
+                "timezone": "America/Los_Angeles",
+                "active":true,
+                "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
+                    "employeeNumber": "701984",
+                    "costCenter": "999",
+                    "organization": "Justice Ducks",
+                    "division": "SHUSH",
+                    "department": "Free Lance agents"
+                }
             }
         }
-    }
-],
-    "failOnErrors": null
+    ],
+    "failOnErrors": false
+}
 "@
 
 $JsonPayload = $JsonContent | ConvertTo-Json
