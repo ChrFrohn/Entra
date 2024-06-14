@@ -16,7 +16,7 @@ $RemoteRoutingAddress = "Contoso.mail.onmicrosoft.com" # Sample: Youdomain.mail.
 # Auth information - Azure subscription / Tenant ID
 $AzureSubscriptionID = "" # Azure subscription ID where the Hybrid Worker is located (VM)
 
-# Connect to Azure -Managed ID (Madrid)
+# Connect to Azure -Managed ID
 Connect-AzAccount -Identity -Subscription $AzureSubscriptionID | Out-Null
 
 # Exchange on-premise Authentification
