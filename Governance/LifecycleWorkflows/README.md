@@ -6,4 +6,4 @@ In order to run these PowerShell scripts in Lifecycle Workflows, I suggest you r
 
 ### Table of content:
 
--  [Create user mailbox](https://github.com/ChrFrohn/Entra-ID/blob/537e6f1cd6fa6bfabf57222b03586f930b9ef3a4/Governance/LifecycleWorkflows/CreateUserMailbox.ps1/) / [Blog Post: Create a user mailbox using Lifecycle Workflows in Microsoft Entra ID Governance()]
+-  [Create user mailbox](https://github.com/ChrFrohn/Entra-ID/blob/537e6f1cd6fa6bfabf57222b03586f930b9ef3a4/Governance/LifecycleWorkflows/CreateUserMailbox.ps1/) / Blog post: [Create a user mailbox using Lifecycle Workflows in Microsoft Entra ID Governance](https://www.christianfrohn.dk/2024/06/14/create-a-user-mailbox-using-lifecycle-workflows-in-microsoft-entra-id-governance/)
