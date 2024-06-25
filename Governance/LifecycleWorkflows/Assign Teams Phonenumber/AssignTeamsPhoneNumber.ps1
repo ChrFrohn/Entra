@@ -10,6 +10,11 @@ $XMLFilePath = "" # "enter the path to the XML file containing the InterpretedUs
 $ClientID = "" # "enter application id that corresponds to the Service Principal" # Do not confuse with its display name
 $TenantID = "" # "enter the tenant ID of the Service Principal"
 $ClientSecret = "" # "enter the secret associated with the Service Principal"
+
+# API-driven provisioning Auth
+$APIClientClientID = "" # Client ID of the API-driven provisioning Service principal
+$APIProvoClientSecret = "" # Client Secret of the API-driven provisioning Service principal
+
 # SQL Auth.
 $SQLRequestToken = Invoke-RestMethod -Method POST `
            -Uri "https://login.microsoftonline.com/$TenantID/oauth2/token"`
@@ -45,6 +50,7 @@ Connect-MicrosoftTeams -AccessTokens @($graphToken, $teamsToken) | Out-Null
 
 # Get user infomation from Microsoft Teams (since we need the user to be there)
 $User = Get-CsOnlineUser -Identity $ObjectIdOrUPN | Select-Object UserPrincipalName, OnPremLineURI, LineURI, RegistrarPool, TeamsUpgradeEffectiveMode, InterpretedUserType, Department
+$TrimUserPrincipalName = $User.UserPrincipalName -replace "@", "_"
 
 Function CheckTeamsUserReadiness {
     param (
@@ -138,14 +144,88 @@ Function EnableTeamsUser {
                 Set-CsPhoneNumberAssignment -Identity $User.UserPrinciplaName -PhoneNumber +$CountryCodeAndNumber -PhoneNumberType DirectRouting -EnterpriseVoiceEnabled $true
         
                 # Updating the DB
-                $TrimUserPrincipalName = $User.UserPrincipalName -replace "@", "_"
                 $Query_UpdateNumber = "UPDATE $DBTableName1 SET UsedBy='$($TrimUserPrincipalName)' WHERE PSTNNumber=$Number"
                 Invoke-Sqlcmd -ServerInstance $SQLServer -Database $DBName -AccessToken $SQLAccessToken -Query $Query_UpdateNumber -Verbose
+
+                # Set Phone number in AD
+                Set-PhoneNumberInAD -JsonpWorkhoneNumber $CountryCodeAndNumber
         
                 Write-OutPut $User.UserPrincipalName "Enabled user for PSTN in Teams with number" $Number
             } else {
                 Write-OutPut "No available numbers found."
             }
+}
+
+Function Set-PhoneNumberInAD
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$JsonpWorkhoneNumber
+    )
+
+    $JsonPayload = @"
+{
+    "schemas": [
+        "urn:ietf:params:scim:api:messages:2.0:BulkRequest"
+    ],
+    "Operations": [
+        {
+            "method": "POST",
+            "bulkId": "897401c2-2de4-4b87-a97f-c02de3bcfc61",
+            "path": "/Users",
+            "data": {
+                "schemas": [
+                    "urn:ietf:params:scim:schemas:core:2.0:User",
+                    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                ],
+                "externalId": "$($TrimUserPrincipalName)",
+                "userName": "$($TrimUserPrincipalName)",
+                "active": true,
+                "phoneNumbers": [
+                    {
+                        "value": "$($JsonpWorkhoneNumber)",
+                        "type": "work"
+                    }
+                ]
+            }
+        }
+    ]
+}
+"@
+
+$JsonPayload = $JsonContent | ConvertTo-Json
+
+# Define the parameters for getting the access token
+$tokenParams = @{
+    Uri         = "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token"
+    Method      = 'POST'
+    Body        = @{
+        client_id     = $APIClientClientID
+        scope         = 'https://graph.microsoft.com/.default'
+        client_secret = $APIProvoClientSecret
+        grant_type    = 'client_credentials'
+    }
+    ContentType = 'application/x-www-form-urlencoded'
+}
+
+# Get the access token
+$accessTokenResponse = Invoke-RestMethod @tokenParams
+
+# Parameters for JSON upload to API-driven provisioning endpoint
+$bulkUploadParams = @{
+    Uri         = $InboundProvisioningAPIEndpoint
+    Method      = 'POST'
+    Headers     = @{
+        'Authorization' = "Bearer " +  $accessTokenResponse.access_token
+        'Content-Type'  = 'application/scim+json'
+    }
+    Body        = ([System.Text.Encoding]::UTF8.GetBytes($JsonPayload))
+    Verbose     = $true
+}
+
+# Send the JSON payload to the API-driven provisioning endpoint
+$response = Invoke-RestMethod @bulkUploadParams
+
 }
 
 # If $ReadinessResult is "Proceed", then the user is ready to be enabled for Teams and assigned a phone number, if "Error(s)" then the user is not ready and the failure messages are outputet
