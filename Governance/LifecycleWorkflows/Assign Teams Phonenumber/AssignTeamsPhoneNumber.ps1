@@ -4,10 +4,12 @@ param (
     [object]$ObjectIdOrUPN
 )
 
+$XMLFilePath = "" # "enter the path to the XML file containing the InterpretedUserType.xml" 
+
 #Auth. using Service Principle with Secret against the SQL DB in Azure and Teams
-$ClientID = "52055e07-a718-4079-b2dd-eb19add05566" # "enter application id that corresponds to the Service Principal" # Do not confuse with its display name
-$TenantID = "7a0d6d06-8a78-4a32-aac9-23050ad2ba20" # "enter the tenant ID of the Service Principal"
-$ClientSecret = "Jfq8Q~VJOIkHLEyiJxyvdeU_kNhBdinNahq52bRA" # "enter the secret associated with the Service Principal"
+$ClientID = "" # "enter application id that corresponds to the Service Principal" # Do not confuse with its display name
+$TenantID = "" # "enter the tenant ID of the Service Principal"
+$ClientSecret = "" # "enter the secret associated with the Service Principal"
 # SQL Auth.
 $SQLRequestToken = Invoke-RestMethod -Method POST `
            -Uri "https://login.microsoftonline.com/$TenantID/oauth2/token"`
@@ -16,9 +18,9 @@ $SQLRequestToken = Invoke-RestMethod -Method POST `
 $SQLAccessToken = $SQLRequestToken.access_token
 
 # SQL server info
-$SQLServer = "cfp-sql.database.windows.net"
-$DBName = "PhoneNumbers"
-$DBTableName1 = "PSTNNumbers_DK"
+$SQLServer = ""
+$DBName = ""
+$DBTableName1 = ""
 
 # Teams Auth.
 $tokenRequestBody = @{   
@@ -39,7 +41,7 @@ $teamsToken = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$TenantI
 Connect-MicrosoftTeams -AccessTokens @($graphToken, $teamsToken) | Out-Null
 
 #XML file containing InterpretedUserType to lookup for actions
-[xml]$xml = Get-Content "C:\Users\Frohn\GitHub\Entra-ID\Governance\LifecycleWorkflows\Assign Teams Phonenumber\InterpretedUserType.xml" #Need a change to -Path where the script is running, or get the XML from URL
+[xml]$xml = Get-Content "$XMLFilePath\InterpretedUserType.xml"
 
 # Get user infomation from Microsoft Teams (since we need the user to be there)
 $User = Get-CsOnlineUser -Identity $ObjectIdOrUPN | Select-Object UserPrincipalName, OnPremLineURI, LineURI, RegistrarPool, TeamsUpgradeEffectiveMode, InterpretedUserType, Department
