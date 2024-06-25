@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<InterpretedUser>
+<!--HybridOnline*-->
+   <Type id="HybridOnlineActiveDirectoryDisabledUser">
+      <Action>Proceed</Action>
+      <Description>User is disable in on-prem AD</Description>
+      <Solution>Enable the user in on-prem AD and try again</Solution>
+   </Type>
+   <Type id="HybridOnlineActiveDirectoryDisabledUserPendingAttributeRemovalFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Enable the user in on-prem AD, then sync to AAD - You may need to remove old SFB attribtues in AD staring with msRTCSIP-*</Solution>
+   </Type>     
+   <Type id="HybridOnlineTeamsOnlyUser">
+      <Action>Proceed</Action>
+      <Description>User is ready for Teams direct routing</Description>
+      <Solution></Solution>
+   </Type>
+   <Type id="HybridOnlineTeamsOnlyUserNotLicensedForService">
+      <Action>Stop</Action>
+      <Description>User is NOT ready for Teams direct routing</Description>
+      <Solution>Assign a Teams licens to the user (E3 or E5 fx.)</Solution>
+   </Type>    
+   <Type id="HybridOnpremActiveDirectoryDisabledUser">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Enable the user in on-prem AD</Solution>
+   </Type>
+   <Type id="HybridOnpremTeamsOnlyUserNotLicensedForService">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Enable the user in on-prem AD and Assign a Teams licens to the user (E3 or E5 fx.)</Solution>
+   </Type>
+   <Type id="HybridOnpremTeamsOnlyUserWithMCOValidationError">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Not clear - Do a Get-csonlineuser and investigate</Solution> <!--This might needs ajustment-->
+   </Type>
+<!--PUREONLINE*-->
+   <Type id="PureOnlineActiveDirectoryDisabledUser">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Enable the user in on-prem AD and try again</Solution>
+   </Type>
+   <Type id="PureOnlineApplicationInstance">
+      <Action>Stop</Action> <!--This needs ajustment-->
+      <description>User is NOT ready for Teams direct routing</description> <!--This needs ajustment-->
+      <Solution>This is an Teams applications - Dont proceed</Solution> <!--This needs ajustment-->
+   </Type>
+   <Type id="PureOnlineApplicationInstancePendingDeletionFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>This is a deleted application - Chose another user</Solution>
+   </Type>
+   <Type id="PureOnlineTeamsOnlyUser">
+      <Action>Proceed</Action>
+      <description>User is ready for Teams direct routing</description>
+      <Solution></Solution>
+   </Type>
+   <Type id="PureOnlineTeamsOnlyUserNotLicensedForService">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>User needs a licens - Assign a Teams licens to the user (E3 or E5 fx.)</Solution>
+   </Type>
+   <Type id="PureOnlineTeamsOnlyUserNotLicensedForServicePendingDeletionFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>User needs a licens and is a process of being deleted - If licens is assigned, the user could be ready for Teams direct routing </Solution>
+   </Type>
+<!--AADConnect*-->
+   <Type id="AADConnectDisabledOnlineActiveDirectoryDisabledUserPendingDeletionFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>User might be deleted in AAD - Enable user in AD and sync the user to AAD</Solution>
+   </Type>
+   <Type id="AADConnectDisabledOnlineTeamsOnlyUserNotLicensedForServicePendingDeletionFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>User might be deleted in AAD - Enable user in AD and sync the user to AAD and then Assign a Teams licens to the user (E3 or E5 fx.)</Solution>
+   </Type>
+   <Type id="AADConnectDisabledOnlineTeamsOnlyUserPendingDeletionFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>User might be deleted in AAD - Enable user in AD and sync the user to AAD</Solution>
+   </Type>
+   <Type id="AADConnectEnabledOnlineActiveDirectoryDisabledUser">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Enable user in AD and sync the user to AAD</Solution>
+   </Type>
+   <Type id="AADConnectEnabledOnlineActiveDirectoryDisabledUserPendingAttributeRemovalFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Enable the user in on-prem AD, then sync to AAD - You may need to remove old SFB attribtues in AD staring with msRTCSIP-*</Solution>z
+   </Type>
+   <Type id="AADConnectEnabledOnlineTeamsOnlyUser">
+      <Action>Proceed</Action>
+      <description>User is ready for Teams direct routing</description>
+      <Solution></Solution> 
+   </Type>
+   <Type id="AADConnectEnabledOnlineTeamsOnlyUserNotLicensedForService">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Assign a Teams licens to the user (E3 or E5 fx.)</Solution> 
+   </Type>
+   <Type id="AADConnectEnabledOnlineTeamsOnlyUserNotLicensedForServicePendingAttributeRemovalFromAD">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Assign a Teams licens to the user (E3 or E5 fx.) - SFB attributes in on-prem AD needs to be checked</Solution>
+   </Type>
+   <Type id="PureOnlineTeamsOnlyUserWithNoService">
+      <Action>Stop</Action>
+      <description>User is NOT ready for Teams direct routing</description>
+      <Solution>Assign a Teams licens to the user (E3 or E5 fx.)</Solution>
+   </Type>       
+</InterpretedUser>
