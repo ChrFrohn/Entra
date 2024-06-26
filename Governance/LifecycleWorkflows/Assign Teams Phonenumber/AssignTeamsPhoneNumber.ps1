@@ -114,8 +114,7 @@ Function CheckTeamsUserReadiness {
     }
     else {
         # Return failure messages if checks did not pass - this will be outputted in the main script
-        return "Error(s)", $failureMessages
-        Exit 1
+        Write-OutPut $failureMessages
     }
 }
 
@@ -152,12 +151,11 @@ Function EnableTeamsUser {
         
                 Write-OutPut $User.UserPrincipalName "Enabled user for PSTN in Teams with number" $Number
             } else {
-                Write-OutPut "No available numbers found."
+                throw "No available numbers found."
             }
 }
 
-Function Set-PhoneNumberInAD
-{
+Function Set-PhoneNumberInAD {
     param(
         [Parameter(Mandatory=$true)]
         [string]$JsonpWorkhoneNumber
@@ -239,6 +237,9 @@ else
 {
     # Output failure messages if checks did not pass
     $ReadinessResult | ForEach-Object { Write-Output $_ }
+    throw $ReadinessResult | ForEach-Object { Write-Output $_ }
 }
    
+
+ 
 
