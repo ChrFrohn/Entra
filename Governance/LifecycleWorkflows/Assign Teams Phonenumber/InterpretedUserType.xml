@@ -112,5 +112,10 @@
       <Action>Stop</Action>
       <description>User is NOT ready for Teams direct routing</description>
       <Solution>Assign a Teams licens to the user (E3 or E5 fx.)</Solution>
-   </Type>       
+   </Type>
+   <Type id="DirSyncEnabledOnlineTeamsOnlyUser">
+      <Action>Proceed</Action>
+      <description>User is ready for Teams direct routing</description>
+      <Solution></Solution>
+   </Type>    
 </InterpretedUser>
