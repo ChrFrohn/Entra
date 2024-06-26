@@ -4,7 +4,7 @@ param (
     [object]$ObjectIdOrUPN
 )
 
-$XMLFilePath = "C:\Scripts\" # "enter the path to the XML file containing the InterpretedUserType.xml" 
+$XMLFilePath = "C:\Scripts\"  # "enter the path to the XML file containing the InterpretedUserType.xml" 
 
 #Auth. using Service Principle with Secret against the SQL DB in Azure and Teams
 $ClientID = "" # "enter application id that corresponds to the Service Principal" # Do not confuse with its display name
@@ -237,9 +237,5 @@ else
 {
     # Output failure messages if checks did not pass
     $ReadinessResult | ForEach-Object { Write-Output $_ }
-    throw $ReadinessResult | ForEach-Object { Write-Output $_ }
+    throw
 }
-   
-
- 
-
