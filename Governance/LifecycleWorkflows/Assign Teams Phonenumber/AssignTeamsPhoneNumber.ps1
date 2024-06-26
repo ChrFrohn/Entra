@@ -231,7 +231,7 @@ $ReadinessResult = CheckTeamsUserReadiness -User $User
 
 if ($ReadinessResult -eq "Proceed") 
 {
-    EnableTeamsUser
+    EnableTeamsUser -User $User.UserPrincipalName -UserDepartment $User.Department
 } 
 else 
 {
