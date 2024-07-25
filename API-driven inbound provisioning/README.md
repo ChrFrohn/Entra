@@ -8,9 +8,11 @@ https://www.christianfrohn.dk/tag/api-driven-user-provisioning/
 
 ### Table of content:
 
-JSONpayload-withExtAttribute.json / JSON payload file to update custom attribute mapping (Sample is extensionAttribute1)
-JSONpayload-withmanager.json / JSON payload file to update manager of a user in Active Diretory
-JSONpayload.json / Default JSON payload to create/Update a user
+#### JSON
+- [JSONpayload-withExtAttribute.json - JSON payload file to update custom attribute mapping (Sample is extensionAttribute1)](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/JSONpayload-withExtAttribute.json)
+- [JSONpayload-withmanager.json - JSON payload file to update manager of a user in Active Diretory](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/JSONpayload-withmanager.json)
+[JSONpayload.json - Default JSON payload to create/Update a user](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/JSONpayload.json)
 
-UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1 / Sample to send JSON to the API-driven inbound provisioning service
-UploadUserDataToTheInboundProvisioningAPI.ps1 / Sample to send payload (But with out JSON payload in it)
+#### PowerShell
+[UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1 - Sample to send JSON to the API-driven inbound provisioning service](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1)
+[UploadUserDataToTheInboundProvisioningAPI.ps1 - Sample to send payload (But with out JSON payload in it)](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/UploadUserDataToTheInboundProvisioningAPI.ps1)
