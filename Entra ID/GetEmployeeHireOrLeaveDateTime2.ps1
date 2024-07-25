@@ -1,5 +1,5 @@
 # UPN or Object ID of the user 
-$ObjectId = "itnb@kromannreumert.com"
+$ObjectId = ""
 
 # Import Module
 Import-Module Microsoft.Graph.Users
