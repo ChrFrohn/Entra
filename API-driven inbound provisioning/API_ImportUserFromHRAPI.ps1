@@ -27,7 +27,7 @@ $RequestToken = Invoke-RestMethod -Method POST `
 $AccessToken = $RequestToken.access_token
 
 # SQL server info
-$SQLServer = "
+$SQLServer = ""
 $DBName = ""
 $DBTable = ""
 
