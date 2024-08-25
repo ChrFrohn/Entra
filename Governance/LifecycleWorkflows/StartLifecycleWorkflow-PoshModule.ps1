@@ -4,7 +4,7 @@ Connect-MgGraph -Scopes "LifecycleWorkflows.ReadWrite.All"
 
 # Initialize Lifecycle Workflow
 $User = "" #Object ID of the user in Entra ID
-$LifeCycleWorkflowID = "" # ID of the lifecycle workflow
+$LifeCycleWorkflowID = "" # ID of the Lifecycle Workflow
 
 $LifeCycleWorkflowParameters = @{
 	subjects = @(
