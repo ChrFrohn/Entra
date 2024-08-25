@@ -1,4 +1,4 @@
-$User = "" # Object ID or UPN of the user in Entra ID
+$User = "" # Object ID of the user in Entra ID
 $LifeCycleWorkflowID = "" # ID of the lifecycle workflow
 
 # Service Principal authentication
