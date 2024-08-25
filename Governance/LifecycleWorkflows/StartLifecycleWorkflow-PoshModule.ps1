@@ -1,6 +1,6 @@
 # Import module and Connect to Microsoft Graph
 Import-Module Microsoft.Graph.Identity.Governance
-Connect-MgGraph -Scopes "IdentityGovernance.ReadWrite.ApprovalWorkflow"
+Connect-MgGraph -Scopes "LifecycleWorkflows.ReadWrite.All"
 
 # Initialize Lifecycle Workflow
 $User = "" #Object ID or UPN of the user in Entra ID
