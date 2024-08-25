@@ -25,7 +25,7 @@ $headers = @{
 # URL that Get's the users properties / Requries User.readAll
 $MSGraphURL = "https://graph.microsoft.com/v1.0/users/${ObjectId}?`$select=employeeHireDate,employeeLeaveDateTime,EmployeeOrgData"        
 
-# The request to get teh users properties
+# The request to get the users properties
 $Response = Invoke-RestMethod -Uri $MSGraphURL -Headers $headers -Method Get -ErrorAction Stop 
 
 # Output of values
