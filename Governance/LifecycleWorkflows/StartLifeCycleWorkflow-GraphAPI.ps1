@@ -20,7 +20,7 @@ $Headers = @{
     "Content-Type"  = "application/json"
 }
 
-# URL to activate the workflow
+# URL to activate the Lifecycle Workflow
 $ActivateWorkflowURL = "https://graph.microsoft.com/v1.0/identityGovernance/lifecycleWorkflows/workflows/$LifeCycleWorkflowID/activate"
 
 # Body of the POST request
