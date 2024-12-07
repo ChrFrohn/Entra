@@ -12,9 +12,6 @@ $TenantID = ""
 $ClientID = ""
 $ClientSecret = ""
 
-# JSON file
-$jsonFilePath = ""
-
 if (-Not (Test-Path -Path $jsonFilePath)) {
     Write-Error "JSON file not found at path: $jsonFilePath"
     exit
@@ -25,7 +22,7 @@ $mailLists = $jsonContent | ConvertFrom-Json
 # Connections
 # Auth - Exchange Online
 try {
-    Connect-ExchangeOnline # -ManagedIdentity -Organization $ExchangeOrganization -ShowBanner:$false
+    Connect-ExchangeOnline -ManagedIdentity -Organization $ExchangeOrganization -ShowBanner:$false
 } catch {
     Write-Error "Failed to connect to Exchange Online: $_"
     exit
@@ -52,14 +49,6 @@ try {
 $Headers = @{
     "Content-Type" = "application/json"
     "Authorization" = "Bearer " + $connection.access_token
-}
-
-$GraphToken = $connection.access_token | ConvertTo-SecureString -AsPlainText -Force
-try {
-    Connect-MgGraph -AccessToken $GraphToken 
-} catch {
-    Write-Error "Failed to connect to Microsoft Graph: $_"
-    exit
 }
 
 #### Execution ####
@@ -152,10 +141,10 @@ function Set-DistributionGroupMember {
     try {
         if ($Action -eq "Add") {
             Add-DistributionGroupMember -Identity $Identity -Member $Member -BypassSecurityGroupManagerCheck
-            Write-Output "Adding $Member to $Identity"
+            #Write-Output "Adding $Member to $Identity" - For debugging
         } else {
             Remove-DistributionGroupMember -Identity $Identity -Member $Member -Confirm:$false -BypassSecurityGroupManagerCheck 
-            Write-Output "Removing $Member from $Identity"
+            #Write-Output "Removing $Member from $Identity" - For debugging
         }
     } catch {
         Write-Output "An error occurred: $_"
