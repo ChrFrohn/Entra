@@ -36,7 +36,7 @@ try {
 # Connections
 # Auth - Exchange Online
 try {
-    Connect-ExchangeOnline # -ManagedIdentity -Organization $ExchangeOrganization -ShowBanner:$false
+    Connect-ExchangeOnline -ManagedIdentity -Organization $ExchangeOrganization -ShowBanner:$false
 } catch {
     Write-Error "Failed to connect to Exchange Online: $_"
     exit
@@ -63,15 +63,6 @@ try {
 $Headers = @{
     "Content-Type" = "application/json"
     "Authorization" = "Bearer " + $connection.access_token
-}
-
-$GraphToken = $connection.access_token | ConvertTo-SecureString -AsPlainText -Force
-try {
-    Connect-MgGraph -AccessToken $GraphToken 
-} catch {
-    Write-Error "Failed to connect to Microsoft Graph: $_"
-    exit
-}
 
 #### Execution ####
 
