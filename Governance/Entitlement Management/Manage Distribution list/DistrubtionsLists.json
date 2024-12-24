@@ -1,0 +1,17 @@
+{
+  "AccessPackages": [
+    {
+      "AccessPackageID": "ede88952-7aa9-43a3-ba65-e0062b97c0a9",
+      "MainDistributionLists": [
+        "Test-Grp4@christianfrohn.dk",
+        "Test-Grp10@christianfrohn.dk"
+      ]
+    },
+    {
+      "AccessPackageID": "ede88952-7aa9-43a3-ba65-e0062b97c0a4",
+      "MainDistributionLists": [
+        "Test-Grp1@christianfrohn.dk"
+      ]
+    }
+  ]
+}
