@@ -1,19 +1,22 @@
+# Create an access package in Entra ID Goverance entitlment management
+
 Import-Module Microsoft.Graph.Identity.Governance
 
-# Access package parameters
-$AccessPackageDisplayName = "" # Sample: "Sales department"
-$AccessPackageDescription = "" # Sample: "Sales department access package"
-$AccessPackageCatalogId = "" # Sample: "00000000-0000-0000-0000-000000000000"
+Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
 
-# Creating the access package
+# Access package information
+$DisplayName = "" # The name of the access package
+$Description = "" # The description of the access package
+$CatalogId = "" # The ID of the catalog where the access package will be created (Needs to exists)
 
-$AccessPackageParameters = @{
-	displayName = $AccessPackageDisplayName 
-	description = $AccessPackageDescription
+$AccessPackageInfoParameters = @{
+	displayName = $DisplayName
+	description = $Description
 	isHidden = $false
 	catalog = @{
-		id = $AccessPackageCatalogId
+		id = $CatalogId
 	}
 }
 
-New-MgEntitlementManagementAccessPackage -BodyParameter $AccessPackageParameters
+# Creation of the access package
+New-MgEntitlementManagementAccessPackage -BodyParameter $AccessPackageInfoParameters
