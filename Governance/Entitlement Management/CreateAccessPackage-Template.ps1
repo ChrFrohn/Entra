@@ -10,8 +10,8 @@ $AccessPackageDescription = "" # Sample: "Department X Access Package"
 $AccessPackageCatalogId = "" # Sample: "00000000-0000-0000-0000-000000000000"
 
 # Request policy parameters
-$RequestPolicyName = "" # Sample: "Auto policy"
-$PolicyDescription = "" # Sample: "Auto policy for sales department"
+$RequestPolicyName = "" # Sample: "Request policy"
+$PolicyDescription = "" # Sample: "Request policy for Department X"
 $membershipRule = "allMemberUsers" # "allMemberUsers", "specificAllowedTargets", "allConfiguredConnectedOrganizationUsers", "notSpecified"
 $Approver = "" # Object ID of the user in Entra ID / Change to groupId for group
 
