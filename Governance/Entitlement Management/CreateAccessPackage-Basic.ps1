@@ -4,19 +4,20 @@ Import-Module Microsoft.Graph.Identity.Governance
 
 Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
 
-# Access package information
-$DisplayName = "" # The name of the access package
-$Description = "" # The description of the access package
-$CatalogId = "" # The ID of the catalog where the access package will be created (Needs to exists)
+# Access package parameters
+$AccessPackageDisplayName = "Department Y" # Sample: "Department X"
+$AccessPackageDescription = "Department Y Access Package" # Sample: "Department X Access Package"
+$AccessPackageCatalogId = "c6348b01-93b3-4d7a-b634-c618e4eee601" # Sample: "00000000-0000-0000-0000-000000000000"
 
-$AccessPackageInfoParameters = @{
-	displayName = $DisplayName
-	description = $Description
+# Creating the access package
+
+$AccessPackageParameters = @{
+	displayName = $AccessPackageDisplayName 
+	description = $AccessPackageDescription
 	isHidden = $false
 	catalog = @{
-		id = $CatalogId
+		id = $AccessPackageCatalogId
 	}
 }
 
-# Creation of the access package
-New-MgEntitlementManagementAccessPackage -BodyParameter $AccessPackageInfoParameters
+New-MgEntitlementManagementAccessPackage -BodyParameter $AccessPackageParameters
