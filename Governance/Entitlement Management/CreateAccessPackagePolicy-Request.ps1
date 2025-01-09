@@ -3,14 +3,20 @@ Import-Module Microsoft.Graph.Identity.Governance
  
 Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
 
+# Request policy parameters
 $AccessPackageId = "" # Access Package ID
-$Approver = "" # ObjectId of the user that needs to approve the requests
+$RequestPolicyName = "" # Sample: "Auto policy"
+$PolicyDescription = "" # Sample: "Request policy for Department X"
+$membershipRule = "allMemberUsers" # "allMemberUsers", "specificAllowedTargets", "allConfiguredConnectedOrganizationUsers", "notSpecified"
+$Approver = "" # Object ID of the user in Entra ID / Change to groupId for group
 
-$PolicyParameters = @{
-    displayName = "Request Policy"
-    description = "policy for assignments upon request"
-    allowedTargetScope = "allMemberUsers" # "allMemberUsers", "specificAllowedTargets", "allConfiguredConnectedOrganizationUsers", "notSpecified"
+# Creating the request policy
 
+$RequestPolicyNameParameters = @{
+	displayName = $RequestPolicyName
+	description = $PolicyDescription
+    allowedTargetScope = $membershipRule
+ 
     expiration = @{
         type = "noExpiration"
     }
@@ -49,8 +55,8 @@ $PolicyParameters = @{
 		)
     }
     accessPackage = @{
-        id = $AccessPackageId
+        id = $NewAccessPackage.Id
     }
 }
 
-New-MgEntitlementManagementAssignmentPolicy -BodyParameter $PolicyParameters
+New-MgEntitlementManagementAssignmentPolicy -BodyParameter $RequestPolicyNameParameters 
