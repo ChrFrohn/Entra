@@ -1,54 +1,41 @@
+# Create an Entitlement Management auto assigment Policy for an Access Package
+
 Import-Module Microsoft.Graph.Identity.Governance
 
-# Access package parameters
-$AccessPackageDisplayName = "" # Sample: "Sales department"
-$AccessPackageDescription = "" # Sample: "Sales department access package"
-$AccessPackageCatalogId = "" # Sample: "00000000-0000-0000-0000-000000000000"
+Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
 
-# Policy parameters
-$PolicyName = "" # Sample: "Auto policy"
-$PolicyDescription = "" # Sample: "Auto policy for sales department"
-$membershipRule = "" # Sample: (user.department -eq "Sales")
+# Auto assignment policy parameters
+$AccessPackageId = "" # Access Package ID
+$AutoPolicyName = "" # Sample: "Auto policy"
+$AutoPolicyDescription = "" # Sample: "Auto policy for department X"
+$AutoAssignmentPolicyFilter = '' # Sample: '(user.department -eq "Department X")' 
+
+$PolicyName = "Automatic assignment policy"
+$PolicyDescription = "policy for automatic assignment"
 
 # Custom extension parameters
 $CustomExtensionId = "" # Sample: "00000000-0000-0000-0000-000000000000" - Needs to be created before running this script
 
+# Creating the auto assignment policy
 
-# Creating the access package
-
-$AccessPackageParameters = @{
-	displayName = $AccessPackageDisplayName 
-	description = $AccessPackageDescription
-	isHidden = $false
-	catalog = @{
-		id = $AccessPackageCatalogId
-	}
-}
-
-New-MgEntitlementManagementAccessPackage -BodyParameter $AccessPackageParameters
-$NewAccessPackage = Get-MgEntitlementManagementAccessPackage -Filter "displayName eq '$DisplayName'"
-
-# Creating the policy
-
-$params = @{
-	displayName = $PolicyName
-	description = $PolicyDescription
-	allowedTargetScope = "specificDirectoryUsers"
-	specificAllowedTargets = @(
+$AutoPolicyParameters = @{
+	DisplayName = $AutoPolicyName
+	Description = $AutoPolicyDescription
+	AllowedTargetScope = "specificDirectoryUsers"
+	SpecificAllowedTargets = @(
 		@{
 			"@odata.type" = "#microsoft.graph.attributeRuleMembers"
 			description = $PolicyDescription
-			membershipRule = $membershipRule
+			membershipRule = $AutoAssignmentPolicyFilter
 		}
 	)
-	automaticRequestSettings = @{
-		requestAccessForAllowedTargets = $true
-		removeAccessWhenTargetLeavesAllowedTargets = $true
+	AutomaticRequestSettings = @{
+		RequestAccessForAllowedTargets = $true
 	}
-	accessPackage = @{
-		id = $NewAccessPackage.Id
+	AccessPackage = @{
+		Id = $NewAccessPackage.Id
 	}
-    customExtensionStageSettings = @(
+	customExtensionStageSettings = @(
         @{
             stage = "assignmentRequestGranted"
             customExtension = @{
@@ -64,7 +51,7 @@ $params = @{
             }
         }
     )
-
 }
 
-New-MgEntitlementManagementAssignmentPolicy -BodyParameter $params
+New-MgEntitlementManagementAssignmentPolicy -BodyParameter $AutoPolicyParameters
+
