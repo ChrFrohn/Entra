@@ -4,15 +4,20 @@ Import-Module Microsoft.Graph.Identity.Governance
 
 Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
 
+# Auto assignment policy parameters
 $AccessPackageId = "" # Access Package ID
-$AutoAssignmentPolicyFilter = '(user.department -eq "Department X")' # The filter to automatically assign the policy.
+$AutoPolicyName = "" # Sample: "Auto policy"
+$AutoPolicyDescription = "" # Sample: "Auto policy for department X"
+$AutoAssignmentPolicyFilter = '' # Sample: '(user.department -eq "Department X")' 
 
 $PolicyName = "Automatic assignment policy"
-$PolicyDescription = "policy for automatic assignment"
+$PolicyDescription = "Policy for automatic assignment"
+
+# Creating the auto assignment policy
 
 $AutoPolicyParameters = @{
-	DisplayName = $PolicyName
-	Description = $PolicyDescription
+	DisplayName = $AutoPolicyName
+	Description = $AutoPolicyDescription
 	AllowedTargetScope = "specificDirectoryUsers"
 	SpecificAllowedTargets = @(
 		@{
@@ -25,7 +30,7 @@ $AutoPolicyParameters = @{
 		RequestAccessForAllowedTargets = $true
 	}
 	AccessPackage = @{
-		Id = $AccessPackageId
+		Id = $NewAccessPackage.Id
 	}
 }
 
