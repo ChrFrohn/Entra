@@ -24,9 +24,9 @@ $Headers = @{
     "Content-Type"  = "application/json"
 }
 
-# Initialize an empty array to store all access package assignments
+# Initialize an empty array to store all access package assignments 
 $allAssignments = @()
-$AssignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
+$AssignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments" # OBS Beta API endpoint since there is no v1.0 
 
 do {
     $Response = Invoke-RestMethod -Method Get -Uri $AssignmentsUri -Headers $Headers
