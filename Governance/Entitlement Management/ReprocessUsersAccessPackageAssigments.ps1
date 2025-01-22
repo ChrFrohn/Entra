@@ -3,51 +3,49 @@ param (
     [string]$ObjectId
 )
 
-# Service Principal
+# Service Principal infomation - Requries EntitlementManagement.ReadWrite.All (Application) permission
 $ClientID = ""
 $ClientSecret = ""
 $TenantID = ""
 
-$body = @{
+# Microft Graph Auth. 
+$Body = @{
     grant_type    = "client_credentials"
     client_id     = $ClientID
     client_secret = $ClientSecret
     scope         = "https://graph.microsoft.com/.default"
 }
 
-$response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token" -ContentType "application/x-www-form-urlencoded" -Body $body
-$accessToken = $response.access_token
+$Response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token" -ContentType "application/x-www-form-urlencoded" -Body $Body
+$AccessToken = $Response.access_token
 
-$headers = @{
-    "Authorization" = "Bearer $accessToken"
+$Headers = @{
+    "Authorization" = "Bearer $AccessToken"
     "Content-Type"  = "application/json"
 }
 
-# Get user attributes
-$url = "https://graph.microsoft.com/v1.0/users/${ObjectId}"
-$userAttributes = Invoke-RestMethod -Uri $url -Headers $headers -Method Get -ErrorAction Stop 
-
-# Initialize an empty array to store all assignments
+# Initialize an empty array to store all access package assignments
 $allAssignments = @()
-$assignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
+$AssignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
 
 do {
-    $response = Invoke-RestMethod -Method Get -Uri $assignmentsUri -Headers $headers
-    $allAssignments += $response.value
-    $assignmentsUri = $response.'@odata.nextLink'
-} while ($assignmentsUri -ne $null)
+    $Response = Invoke-RestMethod -Method Get -Uri $AssignmentsUri -Headers $Headers
+    $allAssignments += $Response.value
+    $AssignmentsUri = $Response.'@odata.nextLink'
+} while ($AssignmentsUri -ne $null)
 
-# Filter assignments
-$Catalogs = @($EMCatalogLocation, $EMCatalogEmployeeType, $EMCatalogDepartment, $EMCatalogSpecialer, $EMCatalogRoles)
-$filteredAssignments = $allAssignments | Where-Object { 
-    $_.targetId -eq $($userAttributes.id) -and 
+# Filter access package assignments
+$FilteredAssignments = $AllAssignments | Where-Object { 
+    $_.targetId -eq $($ObjectId) -and 
     $_.assignmentState -eq 'Delivered'
 }
 
-$filteredAssignments
+$FilteredAssignments
 
-foreach ($Assignment in $filteredAssignments) {
-    $accessPackageAssignmentId = $Assignment.id
-    $ReProcessUserURL = "https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/assignments/$accessPackageAssignmentId/reprocess"
+# Reprocess the access package assignments
+foreach ($Assignment in $FilteredAssignments) 
+{
+    $AccessPackageAssignmentId = $Assignment.id
+    $ReProcessUserURL = "https://graph.microsoft.com/v1.0/identityGovernance/entitlementManagement/assignments/$AccessPackageAssignmentId/reprocess"
     Invoke-RestMethod -Method POST -Uri $ReProcessUserURL -Headers $headers
 }
