@@ -40,8 +40,6 @@ $FilteredAssignments = $AllAssignments | Where-Object {
     $_.assignmentState -eq 'Delivered'
 }
 
-$FilteredAssignments
-
 # Reprocess the access package assignments
 foreach ($Assignment in $FilteredAssignments) 
 {
