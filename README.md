@@ -1,6 +1,6 @@
 # Read me
 
-Code found in this repository is related to my everyday work in Entra and some are associated with blog posts on my blog: [http://Christianfrohn.dk](http://Christianfrohn.dk)
+Code found in this repository is related to my everyday work in Entra and some are associated with blog posts on my blog: [Christianfrohn.dk](http://Christianfrohn.dk)
 
 ## Disclaimer
 
