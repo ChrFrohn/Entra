@@ -72,6 +72,9 @@ Foreach($Newemployee in $GetEmployees)
                 "division": "$JSONdivision",
                 "department": "$JSONOrganizationName"
             }
+        },
+        "urn:ietf:params:scim:schemas:extension:CustomExtensionName:2.0:User": {
+          "extensionAttribute1": "$JSONValidFrom"
         }
     }
 ],
