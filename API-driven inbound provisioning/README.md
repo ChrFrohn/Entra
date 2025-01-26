@@ -6,6 +6,10 @@ I'll suggest reading the following blog post as it explains how the code is used
 
 [API-Driven User Provisioning Blog Posts](https://www.christianfrohn.dk/tag/api-driven-user-provisioning/)
 
+## Disclaimer
+
+The code and documentation in this repository are provided "as is" without warranty of any kind, either express or implied, including but not limited to the implied warranties of merchantability and fitness for a particular purpose. Use at your own risk.
+
 ## Table of Contents
 
 ### JSON
