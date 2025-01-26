@@ -117,5 +117,5 @@ VALUES
 "@
 
     # Execute the command
-    Invoke-Sqlcmd -ServerInstance $serverName -Database $databaseName -Query $ImportQuery -AccessToken $AccessToken
+    Invoke-Sqlcmd -ServerInstance $SQLServer -Database $DBName -Query $ImportQuery -AccessToken $AccessToken
 }
