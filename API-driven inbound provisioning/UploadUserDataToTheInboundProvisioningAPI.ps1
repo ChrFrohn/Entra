@@ -41,5 +41,5 @@ $bulkUploadParams = @{
 
 # Send the JSON payload to the API-driven provisioning endpoint
 $response = Invoke-RestMethod @bulkUploadParams
-
+$response
 
