@@ -1,6 +1,6 @@
 # Read me
 
-# Microsoft Entra - Workload Id
+# Microsoft Entra - Workload Id 
 
 Contains code related to Microsoft Entra Workload Id
 

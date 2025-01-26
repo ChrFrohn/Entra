@@ -1,10 +1,12 @@
 # Read me
 
-All code in this folder are PowerShell script that can be used in Microsoft Entra ID Governance Lifecycle Workflows 
+# Microsoft Entra - Governance - Lifecycle Workflows
 
-In order to run these PowerShell scripts in Lifecycle Workflows, I suggest you read this [how to run PowerShell scripts in Entra ID Governance Lifecycle Workflows](https://www.christianfrohn.dk/2024/06/06/how-to-run-powershell-scripts-in-entra-id-governance-lifecycle-workflows/)
+Contains code related to Microsoft Entra ID Governance Lifecycle Workflows
 
-### Table of content:
+## Disclaimer
+
+The code and documentation in this repository are provided "as is" without warranty of any kind, either express or implied, including but not limited to the implied warranties of merchantability and fitness for a particular purpose. Use at your own risk.
 
 #### PowerShell 
 - [Create user mailbox](https://github.com/ChrFrohn/Entra-ID/blob/537e6f1cd6fa6bfabf57222b03586f930b9ef3a4/Governance/LifecycleWorkflows/CreateUserMailbox.ps1) / Blog post: [Create a user mailbox using Lifecycle Workflows in Microsoft Entra ID Governance](https://www.christianfrohn.dk/2024/06/14/create-a-user-mailbox-using-lifecycle-workflows-in-microsoft-entra-id-governance/)

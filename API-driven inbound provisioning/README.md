@@ -1,8 +1,10 @@
 # Read me
 
-All code in this folder is related to working with API-driven inbound provisioning.
+# Microsoft Entra - API-driven inbound provisioning
 
-I'll suggest reading the following blog post as it explains how the code is used:
+Contains code related to Microsoft API-driven inbound provisioning
+
+I'll suggest reading the following blog posts as it explains how the code is used:
 
 [API-Driven User Provisioning Blog Posts](https://www.christianfrohn.dk/tag/api-driven-user-provisioning/)
 
