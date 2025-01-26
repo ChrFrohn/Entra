@@ -1,4 +1,4 @@
-# Read Me 
+# Read me 
 # Microsoft Entra
 
 Contains code related to Microsoft Entra ID

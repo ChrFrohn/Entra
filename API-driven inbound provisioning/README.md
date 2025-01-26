@@ -1,4 +1,4 @@
-# Read Me Please
+# Read me
 
 All code in this folder is related to working with API-driven inbound provisioning.
 
