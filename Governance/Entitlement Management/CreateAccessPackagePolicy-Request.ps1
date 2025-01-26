@@ -55,7 +55,7 @@ $RequestPolicyNameParameters = @{
 		)
     }
     accessPackage = @{
-        id = $NewAccessPackage.Id
+        id = $AccessPackageId
     }
 }
 
