@@ -1,0 +1,3 @@
+AuditLogs
+| where Category == 'EntitlementManagement'
+| where OperationName contains "Partially" or OperationName contains "Failed"

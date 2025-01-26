@@ -1,0 +1,8 @@
+AuditLogs
+| where OperationName has "Add member to group"
+| where Identity has "Azure AD Identity Governance - Directory Management"
+| extend Targets = TargetResources
+| extend AddedUserUPN = tostring(Targets[0].userPrincipalName)
+| extend AddedUserId = tostring(Targets[0].id)
+| extend GroupAddedTo = tostring(Targets[0].modifiedProperties[1].newValue)
+| project AddedUserUPN, AddedUserId, OperationName, GroupAddedTo, TimeGenerated

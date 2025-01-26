@@ -1,0 +1,12 @@
+AuditLogs
+| where Category == "WorkflowManagement"
+| where Result != "success"
+| extend WorkflowType = AdditionalDetails[0].value
+| extend DisplayName = AdditionalDetails[1].value
+| extend ObjectId = AdditionalDetails[2].value
+| extend UserCount = AdditionalDetails[3].value
+| extend Users = AdditionalDetails[4].value
+| extend RequestId = AdditionalDetails[5].value
+| extend InitiatedBy = InitiatedBy.app.displayName
+| extend Result = Result
+| project WorkflowType, DisplayName, ObjectId, UserCount, Users, RequestId, Id, Result

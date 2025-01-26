@@ -1,0 +1,3 @@
+AuditLogs
+| where Category == "WorkflowManagement"
+| where Result != "success"

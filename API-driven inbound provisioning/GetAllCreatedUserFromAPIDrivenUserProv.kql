@@ -1,0 +1,4 @@
+AADProvisioningLogs
+| where TargetSystem contains "API"
+| where ProvisioningAction contains "Create"
+| where ResultType contains "Succes"

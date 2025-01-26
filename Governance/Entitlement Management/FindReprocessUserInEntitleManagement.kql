@@ -1,0 +1,5 @@
+AuditLogs
+| where OperationName contains "Fulfill access package resource assignment"
+| extend UserInfo = TargetResources
+| extend User = tostring(UserInfo[3].id) 
+| project OperationName, Identity, User

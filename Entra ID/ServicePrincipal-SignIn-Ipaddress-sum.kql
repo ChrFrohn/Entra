@@ -1,0 +1,5 @@
+// Credit to Matt Zorich for this KQL query - https://twitter.com/reprise_99
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(100d)
+| where ResultType == "0"
+| summarize IPAddresses=make_set(IPAddress) by ServicePrincipalName, AppId
