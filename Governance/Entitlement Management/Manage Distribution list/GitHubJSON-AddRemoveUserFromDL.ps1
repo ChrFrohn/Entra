@@ -63,7 +63,7 @@ try {
 $Headers = @{
     "Content-Type" = "application/json"
     "Authorization" = "Bearer " + $connection.access_token
-
+}
 #### Execution ####
 
 # Get the user from Microsoft Graph
