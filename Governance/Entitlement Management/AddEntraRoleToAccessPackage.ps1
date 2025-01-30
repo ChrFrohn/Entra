@@ -1,14 +1,10 @@
-Import-Module Microsoft.Graph.Identity.Governance
-
-Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
-
-# Catalog and Access package values
-$CatalogId = ""
-$AccessPackageId = ""
-
+# Add an Entra Role to an Access Package in Entitlement Management
+$CatalogId = "" # ID of the catalog - Sample: "db4859bf-43c3-49fa-ab13-8036bd333ebe" 
 $EntraRole = "c4e39bd9-1100-46d3-8c65-fb160da0071f" # Change to DirectoryRole ID // https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference
-$EligibilityStatus = "Active" # Change to Active if needed - Check if role is Privileged here: https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference
+$EligibilityStatus = "Eligible" # Change to Active if needed - Check if role is Privileged here: https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference
+$AccessPackageId = "" # ID of the Access Package - Sample: "f4b3b3b4-4b3b-4b3b-4b3b-4b3b4b3b4b3b"
 
+# Add the Entra role as a resource to the Catalog
 $AdditionalRoleScopeParameters = @{
     role = @{
         originId = $EligibilityStatus
@@ -29,8 +25,7 @@ $AdditionalRoleScopeParameters = @{
 
 New-MgEntitlementManagementAccessPackageResourceRoleScope -AccessPackageId $AccessPackageId -BodyParameter $AdditionalRoleScopeParameters
 
-
-# Get the resource from the Catalog
+# Get the Entra role as a resource from the Catalog
 $CatalogResources = Get-MgEntitlementManagementCatalogResource -AccessPackageCatalogId $CatalogId -Filter "originSystem eq '$EntraRole'" -ExpandProperty "scopes" -All
 $Resource = $CatalogResources | Where-Object { $_.Id -eq $CatalogResources.Id }
 $ResourceScope = $Resource.Scopes[0]
