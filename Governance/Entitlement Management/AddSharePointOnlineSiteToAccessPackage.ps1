@@ -9,6 +9,10 @@ $SharePointSiteURL = ""
 $CatalogId = ""  # 
 $SharePointSiteRole = "4" # 4 = Vistors / 5 = Members / 3 = Owners | Run this to get IDs
 
+# Run this if you need to get the SharePoint Site ID roles
+#$SharePointResourceFilter = "(originSystem eq 'SharePointOnline' and resource/id eq '" + $SharePointResourceId + "')"
+#$SharePointResourceRoles = Get-MgEntitlementManagementCatalogResourceRole -AccessPackageCatalogId $CatalogId -Filter $SharePointResourceFilter -All -ExpandProperty "resource"
+
 # Add the SharePoint Online site as a resource to the catalog
 $SharePointResourceAddParameters = @{
   requestType = "adminAdd"
