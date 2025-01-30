@@ -1,4 +1,4 @@
-# Application that needs to be added as a resource to the Catalog and Access Package
+# Add an application as a resource to an Access Package in Entitlement Management
 $CatalogId = "" # ID of the catalog - Sample: "db4859bf-43c3-49fa-ab13-8036bd333ebe"
 $ApplicationId = "" # ID of the application - Sample: "db4859bf-43c3-49fa-ab13-8036bd333ebe"
 $AccessPackageId = "" # ID of the Acceess package - Sample: "db4859bf-43c3-49fa-ab13-8036bd333ebe"
