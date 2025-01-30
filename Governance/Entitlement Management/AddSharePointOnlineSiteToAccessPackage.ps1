@@ -1,19 +1,14 @@
-# Import the necessary module
-Import-Module Microsoft.Graph.Identity.Governance
-
-# Connect to Microsoft Graph
-Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
-
-# Define the SharePoint Online site details
-$SharePointSiteURL = ""
-$CatalogId = ""  # 
-$SharePointSiteRole = "4" # 4 = Vistors / 5 = Members / 3 = Owners | Run this to get IDs
+# Add a SharePoint Online site to an access package in Entitlement Management
+$CatalogId = "" # ID of the catalog - Sample: "db4859bf-43c3-49fa-ab13-8036bd333ebe"
+$SharePointSiteURL = "" # URL of the SharePoint Online site - Sample: https://contoso.sharepoint.com/sites/HR
+$SharePointSiteRole = "4" # 4 = Vistors / 5 = Members / 3 = Owners 
+$AccessPackageId = "" # ID of the access package - Sample: "db4859bf-43c3-49fa-ab13-8036bd333ebe"
 
 # Run this if you need to get the SharePoint Site ID roles
 #$SharePointResourceFilter = "(originSystem eq 'SharePointOnline' and resource/id eq '" + $SharePointResourceId + "')"
 #$SharePointResourceRoles = Get-MgEntitlementManagementCatalogResourceRole -AccessPackageCatalogId $CatalogId -Filter $SharePointResourceFilter -All -ExpandProperty "resource"
 
-# Add the SharePoint Online site as a resource to the catalog
+# Add the SharePoint Online site as a resource to the Catalog
 $SharePointResourceAddParameters = @{
   requestType = "adminAdd"
   resource = @{
@@ -25,12 +20,12 @@ $SharePointResourceAddParameters = @{
 
 New-MgEntitlementManagementResourceRequest -BodyParameter $SharePointResourceAddParameters
 
-# Get the SharePoint Online site resource ID
+# Get the SharePoint Online site as a resource from the Catalog
 $CatalogResources = Get-MgEntitlementManagementCatalogResource -AccessPackageCatalogId $CatalogId -ExpandProperty "scopes" -All
 $SharePointResource = $CatalogResources | Where-Object { $_.OriginId -eq $SharePointSiteURL }
 $SharePointResourceId = $SharePointResource.id
 
-#  Create a new access package resource role scope for the SharePoint Online site
+#  Add the SharePoint Online site to the access package
 $params = @{
   role = @{
     displayName = "Contributors"
@@ -49,4 +44,4 @@ $params = @{
   }
 }
 
-New-MgEntitlementManagementAccessPackageResourceRoleScope -AccessPackageId "db4859bf-43c3-49fa-ab13-8036bd333ebe" -BodyParameter $params
+New-MgEntitlementManagementAccessPackageResourceRoleScope -AccessPackageId $AccessPackageId -BodyParameter $params
