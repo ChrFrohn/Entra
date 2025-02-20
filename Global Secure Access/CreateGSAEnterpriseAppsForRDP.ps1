@@ -15,6 +15,7 @@ $ServerFQDN = $ServerName + $DomainName # FQDN of the server
 $EnterpriseApplicationName = $applicationPreFix + $ServerName # Name of the Enterprise Application
 
 $ACLGroup = "GSA - " + $ServerName # Name of the ACL group for the Enterprise Application
+$ACLTierGroup = "GSA - Tier 1" # Name of the ACL group for the Enterprise Application
 
 # Get Private Connector group
 $ConnectorGroup = Get-EntraBetaApplicationProxyConnectorGroup -Filter "Name eq '$ConnectorGroupName'"
@@ -48,4 +49,9 @@ Foreach ($Variable in $CSVFileConent)
     # Add ACL GSA Group to Enterprise Application
     New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $servicePrincipalObject.Id -ResourceId $servicePrincipalObject.Id -Id $servicePrincipalObject.Approles[1].Id -PrincipalId $group.Id
     Write-Output "ACL GSA Group added to Enterprise Application: $ACLGroup"
+
+    # Add ACL Tier Group to Enterprise Application
+    $ACLTierGroup = Get-EntraBetaGroup -Filter "displayName eq '$ACLTierGroup'"
+    New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $servicePrincipalObject.Id -ResourceId $servicePrincipalObject.Id -Id $servicePrincipalObject.Approles[1].Id -PrincipalId $ACLTierGroup.Id
+    Write-Output "ACL Tier Group added to Enterprise Application: $ACLTierGroup"
 }
