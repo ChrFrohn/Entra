@@ -1,9 +1,12 @@
-Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All'
+Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All', 'Group.Create'
 
-$ConnectorGroupName = "On-Prem-ConnectorGroup" # Name of the group where the Private connector is located
+$CSVFile = "" # Path to the CSV file
+$CSVFileConent = Import-Csv $CSVFile -Delimiter ";"
+
+$ConnectorGroupName = "" # Name of the group where the Private connector is located
 
 $applicationPreFix = "GSA - " # Prefix for the application name
-$DomainName = ".interntnet.dk" # Domain name for the FQDN
+$DomainName = "" # Domain name for the FQDN
 $ServerName = $Variable.ServerName # Name of the server
 $ServerPorts = "3389" # Ports to be opened
 $ServerIP = $Variable.IPAddress # IP address of the server
@@ -16,10 +19,7 @@ $ACLGroup = "GSA - " + $ServerName # Name of the ACL group for the Enterprise Ap
 # Get Private Connector group
 $ConnectorGroup = Get-EntraBetaApplicationProxyConnectorGroup -Filter "Name eq '$ConnectorGroupName'"
 
-$csvFile = "C:\Users\CFP\Downloads\RVTools_tabvInfo22.csv"
-$variables = Import-Csv $csvFile -Delimiter ";"
-
-Foreach ($Variable in $variables) 
+Foreach ($Variable in $CSVFileConent) 
 {
     # Create Private access 
     New-EntraBetaPrivateAccessApplication -ApplicationName $EnterpriseApplicationName -ConnectorGroupId $ConnectorGroup.Id
