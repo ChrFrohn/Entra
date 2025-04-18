@@ -1,0 +1,27 @@
+{
+  "AccessPackages": [
+    {
+      "AccessPackageID": "12345678-1234-1234-1234-1234567890ab",
+      "ADGroups": [
+        "Group_A",
+        "Group_B",
+        "Group_C"
+      ]
+    },
+    {
+      "AccessPackageID": "23456789-2345-2345-2345-2345678901bc",
+      "ADGroups": [
+        "Group_D",
+        "Group_E",
+        "Group_F"
+      ]
+    },
+    {
+      "AccessPackageID": "34567890-3456-3456-3456-3456789012cd",
+      "ADGroups": [
+        "Group_G",
+        "Group_H"
+      ]
+    }
+  ]
+}
