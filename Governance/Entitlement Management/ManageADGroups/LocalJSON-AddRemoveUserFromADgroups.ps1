@@ -3,128 +3,22 @@ param (
     [string]$ObjectId
 )
 
-# Auth information
-# Service Principal information:
-$TenantID = "" # Your tenant ID here
-$ClientID = "" # Your client ID here
-$ClientSecret = "" # Your client secret here
-$jsonFilePath = "C:\Scripts\ADGroups.json" # Path to your JSON file
-
-if (-Not (Test-Path -Path $jsonFilePath)) {
-    Write-Error "JSON file not found at path: $jsonFilePath"
-    exit
-}
-$jsonContent = Get-Content -Path $jsonFilePath -Raw
-$adGroups = $jsonContent | ConvertFrom-Json
-
-# Auth - Microsoft Graph
-$body =  @{
-    Grant_Type    = "client_credentials"
-    Scope         = "https://graph.microsoft.com/.default"
-    Client_Id     = $ClientID
-    Client_Secret = $ClientSecret
-}
-
-try {
-    $connection = Invoke-RestMethod `
-                -Uri https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token `
-                -Method POST `
-                -Body $body
-} catch {
-    Write-Error "Failed to get token from Microsoft Graph: $_"
-    exit
-}
-
-$Headers = @{
-    "Content-Type" = "application/json"
-    "Authorization" = "Bearer " + $connection.access_token
-}
-
-#### Execution ####
-
-# Get the user from Microsoft Graph
-$url = "https://graph.microsoft.com/v1.0/users/${ObjectId}"
-try {
-    $user = Invoke-RestMethod -Uri $url -Headers $Headers -Method Get
-
-} catch {
-    Write-Error "Failed to get user via Microsoft Graph: $_"
-}
-
-# Get Access packages from Entra ID Governance that users have assigned and are delivered
-$allAssignments = @()
-$assignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
-
-do {
-    $response = Invoke-RestMethod -Method Get -Uri $assignmentsUri -Headers $headers
-    $allAssignments += $response.value
-    $assignmentsUri = $response.'@odata.nextLink'
-} while ($assignmentsUri -ne $null)
-
-$filteredAssignments = $allAssignments | Where-Object { 
-            $_.targetId -eq $($user.id) -and 
-            $_.assignmentState -eq 'Delivered'
-} 
-
-$newAccessPackageID = $filteredAssignments | Select-Object -ExpandProperty accessPackageId 
-
-# Filter the AD groups where the given user is a member
-$UserCurrentADGroups = Get-ADPrincipalGroupMembership -Identity $user.userPrincipalName.Split("@")[0].ToUpper() | Select-Object SamAccountName
-
-# Function to get all AD groups from the JSON
-function Get-AllADGroupLists {
-    param (
-        [object]$adGroups # The JSON object containing the AD groups
-    )
-
-    $allGroups = @()
-
-    foreach ($accessPackage in $adGroups.AccessPackages) {
-        $allGroups += $accessPackage.ADGroups | Where-Object { $_ -ne $null -and $_ -ne "" }
-    }
-
-    # Remove duplicates
-    $allGroups = $allGroups | Sort-Object -Unique
-    return $allGroups
-}
-
-# Function to get AD groups for a given access package ID
-function Get-ADGroupLists {
-    param (
-        [string]$accessPackageID, # The access package ID to get AD groups for
-        [object]$adGroups
-    )
-
-    $adGroupLists = @()
-
-    # Find the access package AD groups
-    $accessPackage = $adGroups.AccessPackages | Where-Object { $_.AccessPackageID -eq $accessPackageID }
-    if ($accessPackage) {
-        $adGroupLists += $accessPackage.ADGroups | Where-Object { $_ -ne $null -and $_ -ne "" }
-    }
-
-    # Remove duplicates
-    $adGroupLists = $adGroupLists | Sort-Object -Unique
-    return $adGroupLists
-}
-
-# Function to add/remove user to/from AD groups
 function Set-ADGroupMember {
     param (
-        [Parameter (Mandatory = $true)] # Name of the AD group
+        [Parameter (Mandatory = $true)] # Name of the ADGroup group
         [string]$Identity,
-        [Parameter (Mandatory = $true)] # The user that will be processed (UPN)
+        [Parameter (Mandatory = $true)] # The user that will be processed (Needs to be an email address of the user)
         [string]$Member,
-        [Parameter (Mandatory = $true)] # Add or Remove, if the user should be added to the AD group or removed from it.
+        [Parameter (Mandatory = $true)] # Add or Remove, if the user should be added to the ADGroup group or removed from it.
         [string]$Action
     )
 
     try {
         if ($Action -eq "Add") {
-            Add-ADGroupMember -Identity $Identity -Members $Member
+            Add-ADGroupMember -Identity $Identity -Members $Member -Credential $Credential
             Write-Output "Adding $Member to $Identity"
         } else {
-            Remove-ADGroupMember -Identity $Identity -Members $Member -Confirm:$false
+            Remove-ADGroupMember -Identity $Identity -Members $Member -Credential $Credential -Confirm:$false
             Write-Output "Removing $Member from $Identity"
         }
     } catch {
@@ -132,45 +26,166 @@ function Set-ADGroupMember {
     }
 }
 
-# Function to remove user from current AD groups
-function Remove-UserFromCurrentGroups {
+function Get-AllADGroupLists {
+    param ([array]$json)
+    $allLists = @()
+    foreach ($accessPackage in $json.AccessPackages) {
+        $allLists += $accessPackage.ADGroups | Where-Object { $_ -ne $null -and $_ -ne "" }
+    }
+    $allLists | Sort-Object -Unique
+}
+
+function Get-ADGroupLists {
     param (
-        [string]$username, # The user that will be processed (Needs to be an email address of the user)
-        [array]$currentGroups, # The current AD groups the user is a member of
-        [array]$jsonGroups, # The AD groups from the JSON
-        [array]$requiredGroups # The required AD groups for the user
+        [array]$UsersAccessPackages,
+        [array]$json
     )
+    $ADGroupLists = @()
+    foreach ($accessPackage in $json.AccessPackages) {
+        if ($UsersAccessPackages -contains $accessPackage.AccessPackageID) {
+            $ADGroupLists += $accessPackage.ADGroups | Where-Object { $_ -ne $null -and $_ -ne "" }
+                }
+            }
+    $ADGroupLists | Sort-Object -Unique
+}
 
-    # Find the intersection of current groups and JSON groups, excluding required groups
-    $groupsToRemove = $currentGroups | Where-Object { $jsonGroups -contains $_ -and $requiredGroups -notcontains $_ }
-
-    foreach ($group in $groupsToRemove) {
-        Set-ADGroupMember -Identity $group -Member $username -Action "Remove"
+function Remove-UserFromCurrentLists {
+    param (
+        [string]$UserName,
+        [array]$currentLists,
+        [array]$jsonLists,
+        [array]$requiredLists
+    )
+    $listsToRemove = $currentLists | Where-Object { $jsonLists -contains $_ -and $requiredLists -notcontains $_ }
+    foreach ($list in $listsToRemove) {
+        Set-ADGroupMember -Identity $list -Member $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Action "Remove"
     }
 }
 
-# Function to add user to new AD groups
-function Add-UserToGroups {
+function Add-UserToLists {
     param (
-        [string]$UserName, # The user that will be processed (Needs to be an email address of the user)
-        [array]$groups # The AD groups to add the user to
+        [string]$UserName,
+        [array]$lists
     )
-    foreach ($group in $groups) {
-        Set-ADGroupMember -Identity $group -Member $UserName -Action "Add"
+    # Add user to the ADGroup lists
+    foreach ($list in $lists | Sort-Object -Unique) {
+        Set-ADGroupMember -Identity $list -Member $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Action "Add"
     }
 }
 
-# Get all AD groups from the JSON
-$allJsonGroups = Get-AllADGroupLists -adGroups $adGroups
+# Access package catalogs
+$EMCatalogIDs = @(
+    "", 
+    "", 
+    "", 
+    "",
+    "", 
+    "", 
+    ""  
+) 
 
-# Get the new AD groups
-$newADGroupLists = @()
-foreach ($accessPackageID in $newAccessPackageID) {
-    $newADGroupLists += Get-ADGroupLists -accessPackageID $accessPackageID -adGroups $adGroups
-}
+# Auth information - Azure subscription / Tenant ID
+$AzureSubscriptionID = ""
+$TenantID = ""
 
-# Remove the user from current AD groups that are in the JSON, excluding required groups
-Remove-UserFromCurrentGroups -username $user.userPrincipalName -currentGroups $UserCurrentADGroups.SamAccountName -jsonGroups $allJsonGroups -requiredGroups $newADGroupLists
+# Service Principal
+$ClientID = ""
+$ClientSecret = ""
 
-# Add the user to the new AD groups
-Add-UserToGroups -UserName $user.userPrincipalName -groups $newADGroupLists
+# Authentification to AD
+$Domain = ""
+$ADUsername = ""
+$ADpassword = ""
+$Useradmin = "$Domain\$ADUsername"
+$SecurePassword = ConvertTo-SecureString -String $ADpassword -AsPlainText -Force
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Useradmin , $SecurePassword
+
+$MaxRetryCount = "5"
+$RetryDelay = "30"
+$Stoploop = $false
+[int]$Retrycount = "0"
+
+do {
+    try {
+        # Connect to Azure - Managed ID
+        Connect-AzAccount -Identity -Subscription $AzureSubscriptionID | Out-Null
+
+        
+
+        $body = @{
+            grant_type    = "client_credentials"
+            client_id     = $ClientID
+            client_secret = $ClientSecret
+            scope         = "https://graph.microsoft.com/.default"
+        }
+
+        $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token" -ContentType "application/x-www-form-urlencoded" -Body $body
+        $accessToken = $response.access_token
+
+        $headers = @{
+            "Authorization" = "Bearer $accessToken"
+            "Content-Type"  = "application/json"
+        }
+
+        # Get user attributes
+        $url = "https://graph.microsoft.com/v1.0/users/${ObjectId}"
+        $userAttributes = Invoke-RestMethod -Uri $url -Headers $headers -Method Get -ErrorAction Stop 
+
+        # Initialize an empty array to store all assignments
+        $allAssignments = @()
+        $assignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
+
+        do {
+            $response = Invoke-RestMethod -Method Get -Uri $assignmentsUri -Headers $headers
+            $allAssignments += $response.value
+            $assignmentsUri = $response.'@odata.nextLink'
+        } while ($assignmentsUri -ne $null)
+
+        # Filter assignments
+        $Catalogs = $EMCatalogIDs
+        $filteredAssignments = $allAssignments | Where-Object {
+            $_.targetId -eq $($userAttributes.id) -and
+            $_.assignmentState -eq 'Delivered' -and
+            $_.catalogId -in $Catalogs
+        }
+        
+        $UsersEMAccessPackages = $filteredAssignments | Where-Object { $_.catalogId -in $EMCatalogIDs } | Select-Object -ExpandProperty accessPackageId
+        
+        # Load JSON from file
+        # Auth information - GitHub
+        $jsonFilePath = "C:\Scripts\ADGroups.json" # Path to your JSON file
+
+        if (-Not (Test-Path -Path $jsonFilePath)) {
+            Write-Error "JSON file not found at path: $jsonFilePath"
+        exit
+        }
+        $jsonContent = Get-Content -Path $jsonFilePath -Raw
+        $JSON = $jsonContent | ConvertFrom-Json
+
+        # Filter the ADGroup Lists where given User is member
+        $UserCurrentADGroups = Get-ADPrincipalGroupMembership -Identity $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Credential $Credential | Where-Object { $_.SamAccountName -notlike '$*' } | Select-Object SamAccountName
+
+        $allJsonLists = Get-AllADGroupLists -json $JSON
+        $newADGroupLists = Get-ADGroupLists -UsersAccessPackages $UsersEMAccessPackages -json $JSON
+
+        Remove-UserFromCurrentLists -UserName $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -currentLists $UserCurrentADGroups.SamAccountName -jsonLists $allJsonLists -requiredLists $newADGroupLists
+
+        Add-UserToLists -UserName $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -lists $newADGroupLists
+
+        # Output the job is done.
+        Write-Output "Job completed"
+        $Stoploop = $true
+    } catch {
+        if ($Retrycount -gt $MaxRetryCount) {
+            # Final message after 5 tries
+            Write-Output "Could not send Information after 5 retries."
+            $Stoploop = $true
+        } else {
+            # Retry delay
+            Write-Output "Could not send Information retrying in 30 seconds..."
+            Start-Sleep -Seconds $RetryDelay
+            $Retrycount = $Retrycount + 1
+            Write-Output "Retry count: $Retrycount"
+        }
+    }
+} while ($Stoploop -eq $false)
