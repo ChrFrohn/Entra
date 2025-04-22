@@ -3,6 +3,41 @@ param (
     [string]$ObjectId
 )
 
+$jsonFilePath = "C:\Scripts\ADGroups.json" # Path to your JSON file
+
+# Access package catalogs object IDs
+$EMCatalogIDs = @(
+    "", 
+    "", 
+    "", 
+    "",
+    "", 
+    "", 
+    ""  
+) 
+
+# Service Principal
+$TenantID = ""
+$ClientID = ""
+$ClientSecret = ""
+
+# Authentification to AD
+$Domain = ""
+$ADUsername = ""
+$ADpassword = ""
+$Useradmin = "$Domain\$ADUsername"
+$SecurePassword = ConvertTo-SecureString -String $ADpassword -AsPlainText -Force
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Useradmin, $SecurePassword
+
+# Load JSON from file
+if (-Not (Test-Path -Path $jsonFilePath)) {
+    Write-Error "JSON file not found at path: $jsonFilePath"
+    exit
+}
+$jsonContent = Get-Content -Path $jsonFilePath -Raw
+$JSON = $jsonContent | ConvertFrom-Json
+
+
 function Set-ADGroupMember {
     param (
         [Parameter (Mandatory = $true)] # Name of the ADGroup group
@@ -73,119 +108,55 @@ function Add-UserToLists {
     }
 }
 
-# Access package catalogs
-$EMCatalogIDs = @(
-    "", 
-    "", 
-    "", 
-    "",
-    "", 
-    "", 
-    ""  
-) 
 
-# Auth information - Azure subscription / Tenant ID
-$AzureSubscriptionID = ""
-$TenantID = ""
+# Authenticate to Microsoft Graph API
+$body = @{
+    grant_type    = "client_credentials"
+    client_id     = $ClientID
+    client_secret = $ClientSecret
+    scope         = "https://graph.microsoft.com/.default"
+}
 
-# Service Principal
-$ClientID = ""
-$ClientSecret = ""
+$response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token" -ContentType "application/x-www-form-urlencoded" -Body $body
+$accessToken = $response.access_token
 
-# Authentification to AD
-$Domain = ""
-$ADUsername = ""
-$ADpassword = ""
-$Useradmin = "$Domain\$ADUsername"
-$SecurePassword = ConvertTo-SecureString -String $ADpassword -AsPlainText -Force
-$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Useradmin , $SecurePassword
+$headers = @{
+    "Authorization" = "Bearer $accessToken"
+    "Content-Type"  = "application/json"
+}
 
-$MaxRetryCount = "5"
-$RetryDelay = "30"
-$Stoploop = $false
-[int]$Retrycount = "0"
+# Get user attributes
+$url = "https://graph.microsoft.com/v1.0/users/${ObjectId}"
+$userAttributes = Invoke-RestMethod -Uri $url -Headers $headers -Method Get -ErrorAction Stop
+
+# Initialize an empty array to store all Access Package assignments
+$allAssignments = @()
+$assignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
 
 do {
-    try {
-        # Connect to Azure - Managed ID
-        Connect-AzAccount -Identity -Subscription $AzureSubscriptionID | Out-Null
+    $response = Invoke-RestMethod -Method Get -Uri $assignmentsUri -Headers $headers
+    $allAssignments += $response.value
+    $assignmentsUri = $response.'@odata.nextLink'
+} while ($assignmentsUri -ne $null)
 
-        
+# Filter Access package assignments
+$Catalogs = $EMCatalogIDs
+$filteredAssignments = $allAssignments | Where-Object {
+    $_.targetId -eq $($userAttributes.id) -and
+    $_.assignmentState -eq 'Delivered' -and
+    $_.catalogId -in $Catalogs
+}
 
-        $body = @{
-            grant_type    = "client_credentials"
-            client_id     = $ClientID
-            client_secret = $ClientSecret
-            scope         = "https://graph.microsoft.com/.default"
-        }
+$UsersEMAccessPackages = $filteredAssignments | Where-Object { $_.catalogId -in $EMCatalogIDs } | Select-Object -ExpandProperty accessPackageId
 
-        $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token" -ContentType "application/x-www-form-urlencoded" -Body $body
-        $accessToken = $response.access_token
+# Filter the AD Groups where the user is member of
+$UserCurrentADGroups = Get-ADPrincipalGroupMembership -Identity $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Credential $Credential | Where-Object { $_.SamAccountName -notlike '$*' } | Select-Object SamAccountName
 
-        $headers = @{
-            "Authorization" = "Bearer $accessToken"
-            "Content-Type"  = "application/json"
-        }
+$allJsonLists = Get-AllADGroupLists -json $JSON
+$newADGroupLists = Get-ADGroupLists -UsersAccessPackages $UsersEMAccessPackages -json $JSON
 
-        # Get user attributes
-        $url = "https://graph.microsoft.com/v1.0/users/${ObjectId}"
-        $userAttributes = Invoke-RestMethod -Uri $url -Headers $headers -Method Get -ErrorAction Stop 
+# Remove the user from the current AD groups that are not in the new AD group lists
+Remove-UserFromCurrentLists -UserName $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -currentLists $UserCurrentADGroups.SamAccountName -jsonLists $allJsonLists -requiredLists $newADGroupLists
 
-        # Initialize an empty array to store all assignments
-        $allAssignments = @()
-        $assignmentsUri = "https://graph.microsoft.com/beta/identityGovernance/entitlementManagement/accessPackageAssignments"
-
-        do {
-            $response = Invoke-RestMethod -Method Get -Uri $assignmentsUri -Headers $headers
-            $allAssignments += $response.value
-            $assignmentsUri = $response.'@odata.nextLink'
-        } while ($assignmentsUri -ne $null)
-
-        # Filter assignments
-        $Catalogs = $EMCatalogIDs
-        $filteredAssignments = $allAssignments | Where-Object {
-            $_.targetId -eq $($userAttributes.id) -and
-            $_.assignmentState -eq 'Delivered' -and
-            $_.catalogId -in $Catalogs
-        }
-        
-        $UsersEMAccessPackages = $filteredAssignments | Where-Object { $_.catalogId -in $EMCatalogIDs } | Select-Object -ExpandProperty accessPackageId
-        
-        # Load JSON from file
-        # Auth information - GitHub
-        $jsonFilePath = "C:\Scripts\ADGroups.json" # Path to your JSON file
-
-        if (-Not (Test-Path -Path $jsonFilePath)) {
-            Write-Error "JSON file not found at path: $jsonFilePath"
-        exit
-        }
-        $jsonContent = Get-Content -Path $jsonFilePath -Raw
-        $JSON = $jsonContent | ConvertFrom-Json
-
-        # Filter the ADGroup Lists where given User is member
-        $UserCurrentADGroups = Get-ADPrincipalGroupMembership -Identity $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Credential $Credential | Where-Object { $_.SamAccountName -notlike '$*' } | Select-Object SamAccountName
-
-        $allJsonLists = Get-AllADGroupLists -json $JSON
-        $newADGroupLists = Get-ADGroupLists -UsersAccessPackages $UsersEMAccessPackages -json $JSON
-
-        Remove-UserFromCurrentLists -UserName $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -currentLists $UserCurrentADGroups.SamAccountName -jsonLists $allJsonLists -requiredLists $newADGroupLists
-
-        Add-UserToLists -UserName $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -lists $newADGroupLists
-
-        # Output the job is done.
-        Write-Output "Job completed"
-        $Stoploop = $true
-    } catch {
-        if ($Retrycount -gt $MaxRetryCount) {
-            # Final message after 5 tries
-            Write-Output "Could not send Information after 5 retries."
-            $Stoploop = $true
-        } else {
-            # Retry delay
-            Write-Output "Could not send Information retrying in 30 seconds..."
-            Start-Sleep -Seconds $RetryDelay
-            $Retrycount = $Retrycount + 1
-            Write-Output "Retry count: $Retrycount"
-        }
-    }
-} while ($Stoploop -eq $false)
+# Add the user to the new AD group lists
+Add-UserToLists -UserName $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -lists $newADGroupLists
