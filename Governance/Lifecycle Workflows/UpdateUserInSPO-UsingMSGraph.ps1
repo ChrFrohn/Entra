@@ -5,8 +5,8 @@ param (
 )
 
 # Auth. infomation
-$ClientId = ""
-$TenantId = ""
+$TenantID = ""
+$ClientID = ""
 $ClientSecret = ""
 $SPOTenant = "" # Sample: christinafrohn.sharepoint.com
 $CertThumbprint = "" 
@@ -28,13 +28,13 @@ $headers = @{
 }
 
 # Get the user from Microsoft Graph
-$url = "https://graph.microsoft.com/v1.0/users/${ObjectIdOrUPN}"
+$url = "https://graph.microsoft.com/v1.0/users/${ObjectIdOrUPN}?`$select=UserPrincipalName,mobilePhone,officeLocation,employeeHireDate"
 $user = Invoke-RestMethod -Uri $url -Headers $headers -Method Get -ErrorAction Stop 
 
-# Connect to PnP Online (SPO)
+# Authenticate to SharePoint Online (PnP)
 Connect-PnPOnline $SPOTenant -ClientId $ClientId -Tenant $SPOTenant -Thumbprint $CertThumbprint
 
-# Define a helper function to update user profile properties and handle errors
+# Function to update user profile properties and handle errors
 function Update-SPOUserProfileProperty {
     param (
         [string]$Account,
@@ -52,8 +52,10 @@ function Update-SPOUserProfileProperty {
 }
 
 # Update the user in SharePoint Online using the helper function
-Update-SPOUserProfileProperty -Account $user.UserPrincipalName -PropertyName "SPS-HireDate" -Value $User.HireDate -PropertyDisplayName "SPS-HireDate"
+Update-SPOUserProfileProperty -Account $user.UserPrincipalName -PropertyName "SPS-HireDate" -Value $User.employeeHireDate -PropertyDisplayName "SPS-HireDate"
 Update-SPOUserProfileProperty -Account $user.UserPrincipalName -PropertyName "SPS-Location" -Value $User.officeLocation -PropertyDisplayName "SPS-Location"
 
+# Format the mobile number to include spaces every 2 digits
+# Example: 49123456789 -> 49 12 34 56 78 9
 $formattedMobileNumber = $User.mobilePhone -replace '(\d{2})(?=\d{2})', '$1 '
 Update-SPOUserProfileProperty -Account $user.UserPrincipalName -PropertyName "CellPhone" -Value $formattedMobileNumber -PropertyDisplayName "CellPhone"
