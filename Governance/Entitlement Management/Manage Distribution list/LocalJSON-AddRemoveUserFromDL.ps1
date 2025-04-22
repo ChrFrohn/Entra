@@ -12,6 +12,8 @@ $TenantID = ""
 $ClientID = ""
 $ClientSecret = ""
 
+$jsonFilePath = "" # Path to your JSON file
+
 if (-Not (Test-Path -Path $jsonFilePath)) {
     Write-Error "JSON file not found at path: $jsonFilePath"
     exit
