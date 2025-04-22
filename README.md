@@ -44,6 +44,11 @@ The code and documentation in this repository are provided "as is" without warra
 ### Workload ID
 - [Workload ID](https://github.com/ChrFrohn/Entra/tree/main/Workload%20ID)
 
+### Verified ID
+- [Verified ID](https://github.com/ChrFrohn/Entra/tree/main/Verified%20ID)
+  - [Get-VerifiedIdAuthorities.ps1](https://github.com/ChrFrohn/Entra/blob/main/Verified%20ID/Get-VerifiedIdAuthorities.ps1)
+  - [Set-VerifiedIdAuthority.ps1](https://github.com/ChrFrohn/Entra/blob/main/Verified%20ID/Set-VerifiedIdAuthority.ps1)
+
 ## Contact
 
 For any questions or feedback, feel free to reach out via [LinkedIn](https://www.linkedin.com/in/frohn/).

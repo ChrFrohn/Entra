@@ -1,9 +1,0 @@
-AuditLogs
-| where Category == 'EntitlementManagement'
-| where OperationName contains "Partially" or OperationName contains "Failed"
-| extend AccessPackageInfo = TargetResources
-| extend AccessPackageDisplayName = tostring(AccessPackageInfo[4].displayName)
-| extend AccessPackageId = tostring(AccessPackageInfo[4].id)
-| extend AccessPackageCatalog = tostring(AccessPackageInfo[5].displayName)
-| extend TargetUser = tostring(AccessPackageInfo[6].displayName)
-| project AccessPackageDisplayName, AccessPackageId, AccessPackageCatalog, TargetUser, InitiatedBy = Identity, ActivityDisplayName, ActivityDateTime

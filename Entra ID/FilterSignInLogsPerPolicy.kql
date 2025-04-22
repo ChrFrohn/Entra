@@ -1,5 +1,0 @@
-SigninLogs
-| mvexpand ConditionalAccessPolicies
-| extend CAPolicies = todynamic(tostring(ConditionalAccessPolicies))
-| extend SpecificPolicy = tostring(CAPolicies.displayName)
-| where SpecificPolicy == "NAME OF CA POLICY"

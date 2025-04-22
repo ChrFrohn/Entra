@@ -1,9 +1,0 @@
-// Query returns Service Principals sign-ins and list them by number of sign-ins pr. ip adress
-// You can uncomment line 3 and 6 to use specif IP adress
-// let HQIPs = dynamic(["8.8.8.8", "8.8.4.4"]); // Uncomment this to add your own IP adress to be used as a filter
-AADServicePrincipalSignInLogs
-| where TimeGenerated > ago(100d)
-//| where IPAddress in (HQIPs) // Uncomment this with the first line to use filter on specif IP adress
-| where ResultType == "0"
-| summarize LoginCount=count() by ServicePrincipalName, AppId, IPAddress, Location
-| sort by LoginCount // Change this to either IPAddress or AppId to sort in anotherway
