@@ -5,12 +5,6 @@ Connect-MgGraph -Scopes "Group.Read.All", "EntitlementManagement.Read.All"
 $targetGroup = "" # Name of the group to search for
 $group = Get-MgGroup -Filter "displayName eq '$targetGroup'"
 
-if (-not $group) 
-{
-    Write-Host "Group '$targetGroup' not found in Entra ID." -ForegroundColor Red
-    return
-}
-
 # ObjectId of the group
 $targetGroupId = $group.Id
 
