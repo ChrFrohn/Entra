@@ -2,7 +2,7 @@
 Connect-MgGraph -Scopes "EntitlementManagement.Read.All"
 
 # Specify the SharePoint site URL you want to search for
-$targetSiteUrl = ""
+$targetSiteUrl = "" # Sample: "https://kromannreumert.sharepoint.com/sites/YourSiteName"
 
 # Retrieve all access packages
 $accessPackages = Get-MgEntitlementManagementAccessPackage -all
