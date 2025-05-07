@@ -15,7 +15,7 @@ if (-not $group)
 $targetGroupId = $group.Id
 
 # Get all access packages
-$accessPackages = Get-MgEntitlementManagementAccessPackage
+$accessPackages = Get-MgEntitlementManagementAccessPackage -All
 
 Write-Host "Searching for access packages containing group '$targetGroup'..."
 
