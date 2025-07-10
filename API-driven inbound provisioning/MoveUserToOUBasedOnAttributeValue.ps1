@@ -2,7 +2,6 @@
 $TenantId = ""
 $ClientId = ""
 $ClientSecret = ""
-$ServicePrincipalId = ""
 $ProvisioningApiEndpoint = "" 
 
 # Sample user data - replace with your actual data source
