@@ -45,11 +45,11 @@ $Credential = New-Object -TypeName System.Management.Automation.PSCredential -Ar
 
 function Set-ADGroupMember {
     param (
-        [Parameter (Mandatory = $true)] # Name of the ADGroup group
+        [Parameter (Mandatory = $true)] # Name of the AD Group
         [string]$Identity,
-        [Parameter (Mandatory = $true)] # The user that will be processed (Needs to be an email address of the user)
+        [Parameter (Mandatory = $true)] # The user that will be processed (username or email)
         [string]$Member,
-        [Parameter (Mandatory = $true)] # Add or Remove, if the user should be added to the ADGroup group or removed from it.
+        [Parameter (Mandatory = $true)] # Add or Remove, if the user should be added to or removed from the AD Group
         [string]$Action
     )
 
@@ -98,7 +98,7 @@ function Remove-UserFromCurrentLists {
     )
     $listsToRemove = $currentLists | Where-Object { $jsonLists -contains $_ -and $requiredLists -notcontains $_ }
     foreach ($list in $listsToRemove) {
-        Set-ADGroupMember -Identity $list -Member $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Action "Remove"
+        Set-ADGroupMember -Identity $list -Member $UserName -Action "Remove"
     }
 }
 
@@ -107,9 +107,9 @@ function Add-UserToLists {
         [string]$UserName,
         [array]$lists
     )
-    # Add user to the ADGroup lists
+    # Add user to the AD group lists
     foreach ($list in $lists | Sort-Object -Unique) {
-        Set-ADGroupMember -Identity $list -Member $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Action "Add"
+        Set-ADGroupMember -Identity $list -Member $UserName -Action "Add"
     }
 }
 
@@ -145,14 +145,14 @@ do {
 } while ($assignmentsUri -ne $null)
 
 # Filter Access package assignments
-$Catalogs = $EMCatalogIDs
+						 
 $filteredAssignments = $allAssignments | Where-Object {
     $_.targetId -eq $($userAttributes.id) -and
     $_.assignmentState -eq 'Delivered' -and
-    $_.catalogId -in $Catalogs
+    $_.catalogId -in $EMCatalogIDs
 }
 
-$UsersEMAccessPackages = $filteredAssignments | Where-Object { $_.catalogId -in $EMCatalogIDs } | Select-Object -ExpandProperty accessPackageId
+$UsersEMAccessPackages = $filteredAssignments | Select-Object -ExpandProperty accessPackageId
 
 # Filter the AD Groups where the user is member of
 $UserCurrentADGroups = Get-ADPrincipalGroupMembership -Identity $userAttributes.userPrincipalName.Split("@")[0].ToUpper() -Credential $Credential | Where-Object { $_.SamAccountName -notlike '$*' } | Select-Object SamAccountName
