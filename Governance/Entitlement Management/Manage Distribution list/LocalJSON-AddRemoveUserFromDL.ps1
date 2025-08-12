@@ -81,11 +81,11 @@ $filteredAssignments = $allAssignments | Where-Object {
 
 $newAccessPackageID = $filteredAssignments | Select-Object -ExpandProperty accessPackageId 
 
-# Get Distrubtions lists from Exchange Online
+# Get Distribution lists from Exchange Online
 $DistributionGroups = Get-Distributiongroup -resultsize unlimited 
         
 # Filter the Distribution Lists where given User is member
-$UserCurrentDistrubtionslist = $DistributionGroups | Where-Object { (Get-DistributionGroupMember $_.Name -ResultSize Unlimited | ForEach-Object {$_.PrimarySmtpAddress}) -contains "$($User.userPrincipalName)"} | Select-Object PrimarySmtpAddress
+$UserCurrentDistributionList = $DistributionGroups | Where-Object { (Get-DistributionGroupMember $_.Name -ResultSize Unlimited | ForEach-Object {$_.PrimarySmtpAddress}) -contains "$($User.userPrincipalName)"} | Select-Object PrimarySmtpAddress
 
 # Function to get all distribution lists from the JSON
 function Get-AllDistributionLists {
@@ -143,10 +143,10 @@ function Set-DistributionGroupMember {
     try {
         if ($Action -eq "Add") {
             Add-DistributionGroupMember -Identity $Identity -Member $Member -BypassSecurityGroupManagerCheck
-            #Write-Output "Adding $Member to $Identity" - For debugging
+            Write-Output "Adding $Member to $Identity"
         } else {
             Remove-DistributionGroupMember -Identity $Identity -Member $Member -Confirm:$false -BypassSecurityGroupManagerCheck 
-            #Write-Output "Removing $Member from $Identity" - For debugging
+            Write-Output "Removing $Member from $Identity"
         }
     } catch {
         Write-Output "An error occurred: $_"
@@ -160,7 +160,7 @@ function Add-UserToLists {
         [array]$lists # The distribution lists to add the user to
     )
     foreach ($list in $lists) {
-        Set-DistributionGroupMember -Identity $list -Member $ObjectId -Action "Add"
+        Set-DistributionGroupMember -Identity $list -Member $UserName -Action "Add"
     }
 }
 
@@ -188,7 +188,7 @@ $allJsonLists = Get-AllDistributionLists -mailLists $mailLists
 $newDistributionLists = Get-DistributionLists -accessPackageID $newAccessPackageID
 
 # Remove the user from current distribution lists that are in the JSON, excluding required lists
-Remove-UserFromCurrentLists -username $User.userPrincipalName -currentLists $UserCurrentDistrubtionslist.PrimarySmtpAddress -jsonLists $allJsonLists -requiredLists $newDistributionLists
+Remove-UserFromCurrentLists -username $User.userPrincipalName -currentLists $UserCurrentDistributionList.PrimarySmtpAddress -jsonLists $allJsonLists -requiredLists $newDistributionLists
 
 # Add the user to the new distribution lists
 Add-UserToLists -UserName $User.userPrincipalName -lists $newDistributionLists
