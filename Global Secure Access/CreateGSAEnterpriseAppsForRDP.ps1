@@ -1,4 +1,4 @@
-Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All', 'Group.Create'
+Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All'
 
 # CSV information
 $CsvFilePath = "C:\Users\CFP\GitHub\Toolbox\GSA\WebApplications-Sample.csv" # Update with actual path to the CSV file
