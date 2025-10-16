@@ -1,57 +1,53 @@
 Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All', 'Group.Create'
 
-$CSVFile = "" # Path to the CSV file
-$CSVFileConent = Import-Csv $CSVFile -Delimiter ";"
+# CSV information
+$CsvFilePath = "C:\Users\CFP\GitHub\Toolbox\GSA\WebApplications-Sample.csv" # Update with actual path to the CSV file
+$CsvFileContent = Import-Csv $CsvFilePath -Delimiter ","
 
-$ConnectorGroupName = "" # Name of the group where the Private connector is located
-
-$applicationPreFix = "GSA - " # Prefix for the application name
-$DomainName = "" # Domain name for the FQDN
-$ServerName = $Variable.ServerName # Name of the server
-$ServerPorts = "3389" # Ports to be opened
-$ServerIP = $Variable.IPAddress # IP address of the server
-
-$ServerFQDN = $ServerName + $DomainName # FQDN of the server
-$EnterpriseApplicationName = $applicationPreFix + $ServerName # Name of the Enterprise Application
-
-$ACLGroup = "GSA - " + $ServerName # Name of the ACL group for the Enterprise Application
-$ACLTierGroup = "GSA - Tier 1" # Name of the ACL group for the Enterprise Application
+# Application and group naming
+$ConnectorGroupName = "Default" # Update with actual connector group name
+$ApplicationPrefix = "GSA - Web - " # Update with desired application prefix
+$SecurityGroupPrefix = "GSA - Web - " # Update with desired security group prefix
 
 # Get Private Connector group
-$ConnectorGroup = Get-EntraBetaApplicationProxyConnectorGroup -Filter "Name eq '$ConnectorGroupName'"
+$PrivateConnectorGroupName = $ConnectorGroupName # Name of the group where the Private connector is located
+$PrivateConnectorGroup = Get-EntraBetaApplicationProxyConnectorGroup -Filter "Name eq '$PrivateConnectorGroupName'"
 
-Foreach ($Variable in $CSVFileConent) 
+Foreach ($CsvRow in $CsvFileContent) 
 {
+    # Enterprise Application settings from CSV
+    $AppName = $CsvRow.Name # Name of the application
+    $AppUrl = $CsvRow.URL # URL of the application
+    $AppPorts = @("80", "443") # Ports to be opened
+    
+    # Parse URL to extract hostname
+    $AppUri = [System.Uri]$AppUrl
+    $AppHostName = $AppUri.Host
+    
+    $EnterpriseAppName = $ApplicationPrefix + $AppName
+    $SecurityGroupName = $SecurityGroupPrefix + $AppName
+
     # Create Private access 
-    New-EntraBetaPrivateAccessApplication -ApplicationName $EnterpriseApplicationName -ConnectorGroupId $ConnectorGroup.Id
-    Write-Output "Enterprise Application created: $EnterpriseApplicationName"
+    New-EntraBetaPrivateAccessApplication -ApplicationName $EnterpriseAppName -ConnectorGroupId $PrivateConnectorGroup.Id
+    Write-Output "Enterprise Application created: $EnterpriseAppName"
 
     # Get Enterprise Application
-    $EnterpriseApplication = Get-EntraBetaApplication -Filter "DisplayName eq '$EnterpriseApplicationName'"
-    Write-Output "Enterprise Application retrieved: $EnterpriseApplicationName"
+    $EnterpriseApp = Get-EntraBetaApplication -Filter "DisplayName eq '$EnterpriseAppName'"
+    Write-Output "Enterprise Application retrieved: $EnterpriseAppName"
 
     # Add FQDN to Application
-    New-EntraBetaPrivateAccessApplicationSegment -ApplicationId $EnterpriseApplication.Id -DestinationHost $ServerFQDN -Ports $ServerPorts -Protocol TCP -DestinationType FQDN
-    Write-Output "FQDN added to Enterprise Application: $ServerFQDN"
+    New-EntraBetaPrivateAccessApplicationSegment -ApplicationId $EnterpriseApp.Id -DestinationHost $AppHostName -Ports $AppPorts -Protocol TCP -DestinationType FQDN
+    Write-Output "FQDN added to Enterprise Application: $AppHostName"
 
-    # Add IP to Application
-    New-EntraBetaPrivateAccessApplicationSegment -ApplicationId $EnterpriseApplication.Id -DestinationHost $ServerIP -Ports $ServerPorts -Protocol TCP -DestinationType ipAddress
-    Write-Output "IP added to Enterprise Application: $ServerIP"
-
-    # Create ACL GSA Group
-    New-EntraBetaGroup -SecurityEnabled $true -DisplayName $ACLGroup -MailNickname $ACLGroup -MailEnabled $false
-    Write-Output "ACL GSA Group created: $ACLGroup"
+    # Create Entra Security Group
+    New-EntraBetaGroup -SecurityEnabled $true -DisplayName $SecurityGroupName -MailNickname ($SecurityGroupName -replace '\s|æ|ø|å','') -MailEnabled $false
+    Write-Output "Entra Security Group created: $SecurityGroupName"
 
     # Get Enterprise Application
-    $servicePrincipalObject = Get-EntraBetaServicePrincipal -Filter "displayName eq '$EnterpriseApplicationName'"
-    $group = Get-EntraBetaGroup -Filter "displayName eq '$ACLGroup'"
+    $ServicePrincipal = Get-EntraBetaServicePrincipal -Filter "displayName eq '$EnterpriseAppName'"
+    $SecurityGroup = Get-EntraBetaGroup -Filter "displayName eq '$SecurityGroupName'"
 
-    # Add ACL GSA Group to Enterprise Application
-    New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $servicePrincipalObject.Id -ResourceId $servicePrincipalObject.Id -Id $servicePrincipalObject.Approles[1].Id -PrincipalId $group.Id
-    Write-Output "ACL GSA Group added to Enterprise Application: $ACLGroup"
-
-    # Add ACL Tier Group to Enterprise Application
-    $ACLTierGroup = Get-EntraBetaGroup -Filter "displayName eq '$ACLTierGroup'"
-    New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $servicePrincipalObject.Id -ResourceId $servicePrincipalObject.Id -Id $servicePrincipalObject.Approles[1].Id -PrincipalId $ACLTierGroup.Id
-    Write-Output "ACL Tier Group added to Enterprise Application: $ACLTierGroup"
+    # Add Entra Security Group to Enterprise Application
+    New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $ServicePrincipal.Id -ResourceId $ServicePrincipal.Id -Id $ServicePrincipal.Approles[1].Id -PrincipalId $SecurityGroup.Id
+    Write-Output "Entra Security Group added to Enterprise Application: $SecurityGroupName"
 }
