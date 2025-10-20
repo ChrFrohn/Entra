@@ -1,18 +1,13 @@
-Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All', 'Group.Create'
+Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All'
 
 # CSV infomation
-$CsvFilePath = "C:\Users\ChristianFrohn\GitHub\Entra\Global Secure Access\WebApplications-Sample.csv" # Update with actual path to the CSV file
+$CsvFilePath = "" # Update with actual path to the CSV file
 $CsvFileContent = Import-Csv $CsvFilePath -Delimiter ","
 
 # Application and group naming
-$ConnectorGroupName = "YourConnectorGroupName" # Update with actual connector group name
-$AppPrefix = "GSA - Web -" # Update with desired application prefix
-$SecurityGroupPrefix = "GSA - Web -" # Update with desired security group prefix
-
-# Enterprise Application settings
-$AppName = $CsvRow.Name # Name of the application
-$AppUrl = $CsvRow.URL # URL of the application
-$AppPorts = @("80", "443") # Ports to be opened
+$ConnectorGroupName = "" # Update with actual connector group name
+$AppPrefix = "GSA - Web - " # Update with desired application prefix
+$SecurityGroupPrefix = "GSA - Web - " # Update with desired security group prefix
 
 # Get Private Connector group
 $PrivateConnectorGroupName = $ConnectorGroupName # Name of the group where the Private connector is located
@@ -20,6 +15,11 @@ $PrivateConnectorGroup = Get-EntraBetaApplicationProxyConnectorGroup -Filter "Na
 
 Foreach ($CsvRow in $CsvFileContent) 
 {
+    # Enterprise Application settings (from CSV row)
+    $AppName = $CsvRow.Name # Name of the application
+    $AppUrl = $CsvRow.URL # URL of the application
+    $AppPorts = @("80", "443") # Ports to be opened
+
     # Parse URL to extract hostname
     $AppUri = [System.Uri]$AppUrl
     $AppHostName = $AppUri.Host
