@@ -1,11 +1,11 @@
 Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All'
 
 # CSV infomation
-$CsvFilePath = "" # Update with actual path to the CSV file
+$CsvFilePath = "C:\Users\ChristianFrohn\GitHub\Entra\Global Secure Access\WebApplications-Sample.csv" # Update with actual path to the CSV file
 $CsvFileContent = Import-Csv $CsvFilePath -Delimiter ","
 
 # Application and group naming
-$ConnectorGroupName = "" # Update with actual connector group name
+$ConnectorGroupName = "Default" # Update with actual connector group name
 $AppPrefix = "GSA - Web - " # Update with desired application prefix
 $SecurityGroupPrefix = "GSA - Web - " # Update with desired security group prefix
 
