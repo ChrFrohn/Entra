@@ -1,7 +1,7 @@
 Connect-Entra -Scopes 'NetworkAccessPolicy.ReadWrite.All', 'Application.ReadWrite.All', 'NetworkAccess.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All', 'Group.ReadWrite.All'
 
 # CSV infomation
-$CsvFilePath = "C:\Users\ChristianFrohn\GitHub\Entra\Global Secure Access\WebApplications-Sample.csv" # Update with actual path to the CSV file
+$CsvFilePath = "" # Update with actual path to the CSV file
 $CsvFileContent = Import-Csv $CsvFilePath -Delimiter ","
 
 # Application and group naming
@@ -27,27 +27,70 @@ Foreach ($CsvRow in $CsvFileContent)
     $EnterpriseAppName = $AppPrefix + $AppName
     $SecurityGroupName = $SecurityGroupPrefix + $AppName
 
-    # Create Private access 
-    New-EntraBetaPrivateAccessApplication -ApplicationName $EnterpriseAppName -ConnectorGroupId $PrivateConnectorGroup.Id
-    Write-Output "Enterprise Application created: $EnterpriseAppName"
+    Write-Output "Processing: $AppName"
 
-    # Get Enterprise Application
-    $EnterpriseApp = Get-EntraBetaApplication -Filter "DisplayName eq '$EnterpriseAppName'"
-    Write-Output "Enterprise Application retrieved: $EnterpriseAppName"
+    # Check if application already exists using Private Access command
+    $ExistingPrivateApp = Get-EntraBetaPrivateAccessApplication -ErrorAction SilentlyContinue | Where-Object { $_.displayName -eq $EnterpriseAppName } | Select-Object -First 1
+    
+    if (-not $ExistingPrivateApp) {
+        # Create Private access application
+        New-EntraBetaPrivateAccessApplication -ApplicationName $EnterpriseAppName -ConnectorGroupId $PrivateConnectorGroup.Id | Out-Null
+        Write-Output "  Enterprise Application created: $EnterpriseAppName"
+        Start-Sleep -Seconds 5
+        $ExistingPrivateApp = Get-EntraBetaPrivateAccessApplication -ErrorAction SilentlyContinue | Where-Object { $_.displayName -eq $EnterpriseAppName } | Select-Object -First 1
+    } else {
+        Write-Output "  Application already exists: $EnterpriseAppName"
+    }
+    
+    # Get the full application details using the App ID from the Private Access app
+    $EnterpriseApp = Get-EntraBetaApplication -Filter "AppId eq '$($ExistingPrivateApp.appId)'" -ErrorAction SilentlyContinue | Select-Object -First 1
 
-    # Add FQDN to Application
-    New-EntraBetaPrivateAccessApplicationSegment -ApplicationId $EnterpriseApp.Id -DestinationHost $AppHostName -Ports $AppPorts -Protocol TCP -DestinationType FQDN
-    Write-Output "FQDN added to Enterprise Application: $AppHostName"
+    # Check if FQDN segment already exists
+    $ExistingSegment = Get-EntraBetaPrivateAccessApplicationSegment -ApplicationId $EnterpriseApp.Id -ErrorAction SilentlyContinue | Where-Object { $_.destinationHost -eq $AppHostName }
+    
+    if (-not $ExistingSegment) {
+        # Add FQDN to Application
+        New-EntraBetaPrivateAccessApplicationSegment -ApplicationId $EnterpriseApp.Id -DestinationHost $AppHostName -Ports $AppPorts -Protocol TCP -DestinationType FQDN | Out-Null
+        Write-Output "  FQDN added to Application: $AppHostName"
+    } else {
+        Write-Output "  FQDN segment already exists: $AppHostName"
+    }
 
-    # Create Entra Security Group
-    New-EntraBetaGroup -SecurityEnabled $true -DisplayName $SecurityGroupName -MailNickname ($SecurityGroupName -replace '\s|æ|ø|å','') -MailEnabled $false
-    Write-Output "Entra Security Group created: $SecurityGroupName"
+    # Check if security group already exists
+    $SecurityGroup = Get-EntraBetaGroup -Filter "displayName eq '$SecurityGroupName'" -ErrorAction SilentlyContinue | Select-Object -First 1
+    
+    if (-not $SecurityGroup) {
+        # Create Entra Security Group
+        New-EntraBetaGroup -SecurityEnabled $true -DisplayName $SecurityGroupName -MailNickname ($SecurityGroupName -replace '\s|æ|ø|å','') -MailEnabled $false | Out-Null
+        Write-Output "  Entra Security Group created: $SecurityGroupName"
+        Start-Sleep -Seconds 3
+        $SecurityGroup = Get-EntraBetaGroup -Filter "displayName eq '$SecurityGroupName'" -ErrorAction SilentlyContinue | Select-Object -First 1
+    } else {
+        Write-Output "  Security Group already exists: $SecurityGroupName"
+    }
 
-    # Get Enterprise Application
-    $ServicePrincipal = Get-EntraBetaServicePrincipal -Filter "displayName eq '$EnterpriseAppName'"
-    $SecurityGroup = Get-EntraBetaGroup -Filter "displayName eq '$SecurityGroupName'"
+    # Get Service Principal
+    $ServicePrincipal = Get-EntraBetaServicePrincipal -Filter "displayName eq '$EnterpriseAppName'" -ErrorAction SilentlyContinue | Select-Object -First 1
+    
+    # Check if group is already assigned
+    $ExistingAssignment = Get-EntraBetaServicePrincipalAppRoleAssignedTo -ServicePrincipalId $ServicePrincipal.Id -ErrorAction SilentlyContinue | Where-Object { $_.PrincipalId -eq $SecurityGroup.Id }
+    
+    if (-not $ExistingAssignment) {
+        # Find the appropriate app role
+        $appRole = $ServicePrincipal.AppRoles | Where-Object { $_.AllowedMemberTypes -contains "User" } | Select-Object -First 1
+        
+        if ($null -eq $appRole) {
+            $appRoleId = "00000000-0000-0000-0000-000000000000"
+        } else {
+            $appRoleId = $appRole.Id
+        }
 
-    # Add Entra Security Group to Enterprise Application
-    New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $ServicePrincipal.Id -ResourceId $ServicePrincipal.Id -Id $ServicePrincipal.Approles[1].Id -PrincipalId $SecurityGroup.Id
-    Write-Output "Entra Security Group added to Enterprise Application: $SecurityGroupName"
+        # Add Entra Security Group to Enterprise Application
+        New-EntraBetaServicePrincipalAppRoleAssignment -ObjectId $ServicePrincipal.Id -ResourceId $ServicePrincipal.Id -Id $appRoleId -PrincipalId $SecurityGroup.Id | Out-Null
+        Write-Output "  Security Group assigned to Application"
+    } else {
+        Write-Output "  Security Group already assigned to Application"
+    }
+    
+    Write-Output ""
 }
