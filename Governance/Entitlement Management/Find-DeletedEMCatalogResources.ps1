@@ -1,6 +1,6 @@
-# Find orphaned resources in Catalogs (deleted groups and applications)
+# Find orphaned resources in Catalogs (deleted groups, applications, and SharePoint sites)
 
-Connect-MgGraph -Scopes "Group.Read.All", "Application.Read.All", "EntitlementManagement.Read.All"
+Connect-MgGraph -Scopes "Group.Read.All", "Application.Read.All", "EntitlementManagement.Read.All", "Sites.Read.All" -NoWelcome
 
 # Get all catalogs
 $Catalogs = Get-MgEntitlementManagementCatalog -All
@@ -24,7 +24,7 @@ foreach ($catalog in $Catalogs)
         # Check if Group still exists
         if ($OriginSystem -eq "AadGroup") 
         {
-            $ResourceType = "Entra ID Group"
+            $ResourceType = "Group"
             try 
             {
                 $null = Get-MgGroup -GroupId $OriginId -ErrorAction Stop
@@ -37,7 +37,7 @@ foreach ($catalog in $Catalogs)
         # Check if Application still exists
         elseif ($OriginSystem -eq "AadApplication") 
         {
-            $ResourceType = "Entra ID Application"
+            $ResourceType = "Application"
             try 
             {
                 $null = Get-MgServicePrincipal -ServicePrincipalId $OriginId -ErrorAction Stop
@@ -50,8 +50,15 @@ foreach ($catalog in $Catalogs)
         elseif ($OriginSystem -eq "SharePointOnline") 
         {
             $ResourceType = "SharePoint Online Site"
-            # SharePoint sites require manual verification
-            $IsOrphaned = $false
+            # Check if SharePoint site still exists
+            try 
+            {
+                $null = Get-MgSite -SiteId $OriginId -ErrorAction Stop
+            }
+            catch 
+            {
+                $IsOrphaned = $true
+            }
         }
         
         if ($IsOrphaned) 
@@ -75,13 +82,13 @@ if ($AllOrphanedResources.Count -gt 0)
 {
     Write-Host "`nTotal orphaned resources found: $($AllOrphanedResources.Count)" -ForegroundColor Yellow
     
-    $ExportPath = Join-Path $PSScriptRoot "OrphanedCatalogResources_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
-    $AllOrphanedResources | Export-Csv -Path $ExportPath -NoTypeInformation
-    Write-Host "Report exported to: $ExportPath" -ForegroundColor Cyan
+    # Display summary by resource type
+    Write-Host "`nOrphaned Resources Summary:" -ForegroundColor Cyan
+    $AllOrphanedResources | Group-Object ResourceType | ForEach-Object {
+        Write-Host "  • $($_.Name): $($_.Count) resources" -ForegroundColor White
+    }
 } 
 else 
 {
     Write-Host "`nNo orphaned resources found." -ForegroundColor Green
 }
-
-Write-Host "Search complete."
