@@ -1,13 +1,13 @@
-# Find orphaned resources in Catalogs (deleted groups, applications, and SharePoint sites)
+# Find deleted resources in Catalogs (deleted groups, applications, and SharePoint sites)
 
 Connect-MgGraph -Scopes "Group.Read.All", "Application.Read.All", "EntitlementManagement.Read.All", "Sites.Read.All" -NoWelcome
 
 # Get all catalogs
 $Catalogs = Get-MgEntitlementManagementCatalog -All
 
-$AllOrphanedResources = @()
+$AllDeletedResources = @()
 
-Write-Host "Checking catalogs for orphaned resources..." -ForegroundColor Yellow
+Write-Host "Checking catalogs for deleted resources..." -ForegroundColor Yellow
 
 foreach ($catalog in $Catalogs) 
 {
@@ -18,7 +18,7 @@ foreach ($catalog in $Catalogs)
         $OriginSystem = $resource.OriginSystem
         $OriginId = $resource.OriginId
         $DisplayName = $resource.DisplayName
-        $IsOrphaned = $false
+        $IsDeleted = $false
         $ResourceType = ""
         
         # Check if Group still exists
@@ -31,7 +31,7 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         # Check if Application still exists
@@ -44,7 +44,7 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         elseif ($OriginSystem -eq "SharePointOnline") 
@@ -57,13 +57,13 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         
-        if ($IsOrphaned) 
+        if ($IsDeleted) 
         {
-            $AllOrphanedResources += [PSCustomObject]@{
+            $AllDeletedResources += [PSCustomObject]@{
                 Catalog     = $catalog.DisplayName
                 CatalogId   = $catalog.Id
                 ResourceType = $ResourceType
@@ -73,22 +73,22 @@ foreach ($catalog in $Catalogs)
                 ResourceId  = $resource.Id
             }
             
-            Write-Host "Found orphaned resource: $DisplayName ($ResourceType) in $($catalog.DisplayName)" -ForegroundColor Red
+            Write-Host "Found deleted resource: $DisplayName ($ResourceType) in $($catalog.DisplayName)" -ForegroundColor Red
         }
     }
 }
 
-if ($AllOrphanedResources.Count -gt 0) 
+if ($AllDeletedResources.Count -gt 0) 
 {
-    Write-Host "`nTotal orphaned resources found: $($AllOrphanedResources.Count)" -ForegroundColor Yellow
+    Write-Host "`nTotal deleted resources found: $($AllDeletedResources.Count)" -ForegroundColor Yellow
     
     # Display summary by resource type
-    Write-Host "`nOrphaned Resources Summary:" -ForegroundColor Cyan
-    $AllOrphanedResources | Group-Object ResourceType | ForEach-Object {
+    Write-Host "`nDeleted Resources Summary:" -ForegroundColor Cyan
+    $AllDeletedResources | Group-Object ResourceType | ForEach-Object {
         Write-Host "  • $($_.Name): $($_.Count) resources" -ForegroundColor White
     }
 } 
 else 
 {
-    Write-Host "`nNo orphaned resources found." -ForegroundColor Green
+    Write-Host "`nNo deleted resources found." -ForegroundColor Green
 }

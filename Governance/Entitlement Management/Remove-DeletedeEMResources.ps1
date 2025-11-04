@@ -1,12 +1,13 @@
+# Remove deleted resources from Entitlement Management catalogs and access packages
 
 Connect-MgGraph -Scopes "Group.Read.All", "Application.Read.All", "EntitlementManagement.ReadWrite.All", "Sites.Read.All" -NoWelcome
 
 # Get all catalogs
 $Catalogs = Get-MgEntitlementManagementCatalog -All
 
-$AllOrphanedResources = @()
+$AllDeletedResources = @()
 
-Write-Host "Checking catalogs for orphaned resources..." -ForegroundColor Yellow
+Write-Host "Checking catalogs for deleted resources..." -ForegroundColor Yellow
 
 foreach ($catalog in $Catalogs) 
 {
@@ -17,7 +18,7 @@ foreach ($catalog in $Catalogs)
         $OriginSystem = $resource.OriginSystem
         $OriginId = $resource.OriginId
         $DisplayName = $resource.DisplayName
-        $IsOrphaned = $false
+        $IsDeleted = $false
         $ResourceType = ""
         
         # Check if Group still exists
@@ -30,7 +31,7 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         # Check if Application still exists
@@ -43,7 +44,7 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         elseif ($OriginSystem -eq "SharePointOnline") 
@@ -56,13 +57,13 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         
-        if ($IsOrphaned) 
+        if ($IsDeleted) 
         {
-            $AllOrphanedResources += [PSCustomObject]@{
+            $AllDeletedResources += [PSCustomObject]@{
                 Catalog      = $catalog.DisplayName
                 CatalogId    = $catalog.Id
               ResourceType = $ResourceType
@@ -72,29 +73,29 @@ foreach ($catalog in $Catalogs)
               ResourceId   = $resource.Id
             }
             
-            Write-Host "Found orphaned resource: $DisplayName ($ResourceType) in $($catalog.DisplayName)" -ForegroundColor Red
+            Write-Host "Found deleted resource: $DisplayName ($ResourceType) in $($catalog.DisplayName)" -ForegroundColor Red
         }
     }
 }
 
-if ($AllOrphanedResources.Count -gt 0) 
+if ($AllDeletedResources.Count -gt 0) 
 {
-    Write-Host "`nTotal orphaned resources found: $($AllOrphanedResources.Count)" -ForegroundColor Yellow
+    Write-Host "`nTotal deleted resources found: $($AllDeletedResources.Count)" -ForegroundColor Yellow
     
     # Ask for confirmation before proceeding
     Write-Host "`n" -NoNewline
-    $confirmation = Read-Host "Do you want to remove these orphaned resources? (yes/no)"
+    $confirmation = Read-Host "Do you want to remove these deleted resources? (yes/no)"
     
     if ($confirmation -in @("yes", "y", "Y", "Yes", "YES")) 
     {
-        # Step 1: Remove orphaned resources from access packages
+        # Step 1: Remove deleted resources from access packages
         
-      Foreach ($orphanedResource in $AllOrphanedResources) 
+      Foreach ($deletedResource in $AllDeletedResources) 
         {
             # Get all access packages in this catalog
             try 
             {
-                $accessPackages = Get-MgEntitlementManagementAccessPackage -Filter "catalog/id eq '$($orphanedResource.CatalogId)'" -ExpandProperty "resourceRoleScopes" -All -ErrorAction Stop
+                $accessPackages = Get-MgEntitlementManagementAccessPackage -Filter "catalog/id eq '$($deletedResource.CatalogId)'" -ExpandProperty "resourceRoleScopes" -All -ErrorAction Stop
                 
               Foreach ($accessPackage in $accessPackages) 
                 {
@@ -103,13 +104,13 @@ if ($AllOrphanedResources.Count -gt 0)
                     {
                       Foreach ($roleScope in $accessPackage.ResourceRoleScopes) 
                         {
-                            # Check if this role scope references the orphaned resource
-                            if ($roleScope.Scope.OriginId -eq $orphanedResource.OriginId) 
+                            # Check if this role scope references the deleted resource
+                            if ($roleScope.Scope.OriginId -eq $deletedResource.OriginId) 
                             {
                                 try 
                                 {
                                     #Remove-MgEntitlementManagementAccessPackageResourceRoleScope -AccessPackageId $accessPackage.Id -AccessPackageResourceRoleScopeId $roleScope.Id -ErrorAction Stop
-                                    Write-Host "Removed '$($orphanedResource.ResourceName)' from access package '$($accessPackage.DisplayName)'" -ForegroundColor Green
+                                    Write-Host "Removed '$($deletedResource.ResourceName)' from access package '$($accessPackage.DisplayName)'" -ForegroundColor Green
                                 }
                                 catch 
                                 {
@@ -122,26 +123,26 @@ if ($AllOrphanedResources.Count -gt 0)
             }
             catch 
             {
-                Write-Host "  Error processing '$($orphanedResource.ResourceName)': $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "  Error processing '$($deletedResource.ResourceName)': $($_.Exception.Message)" -ForegroundColor Red
             }
         }
         
-        # Step 2: Remove orphaned resources from catalogs
+        # Step 2: Remove deleted resources from catalogs
         
-      Foreach ($orphanedResource in $AllOrphanedResources) 
+      Foreach ($deletedResource in $AllDeletedResources) 
         {
             try 
             {
-                #Remove-MgEntitlementManagementCatalogResource -AccessPackageCatalogId $orphanedResource.CatalogId -AccessPackageResourceId $orphanedResource.ResourceId -ErrorAction Stop
-                Write-Host "Removed '$($orphanedResource.ResourceName)' from catalog '$($orphanedResource.Catalog)'" -ForegroundColor Green
+                #Remove-MgEntitlementManagementCatalogResource -AccessPackageCatalogId $deletedResource.CatalogId -AccessPackageResourceId $deletedResource.ResourceId -ErrorAction Stop
+                Write-Host "Removed '$($deletedResource.ResourceName)' from catalog '$($deletedResource.Catalog)'" -ForegroundColor Green
             }
             catch 
             {
-                Write-Host "Failed to remove '$($orphanedResource.ResourceName)': $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "Failed to remove '$($deletedResource.ResourceName)': $($_.Exception.Message)" -ForegroundColor Red
             }
         }
         
-        Write-Host "`nRemoved $($AllOrphanedResources.Count) orphaned resource(s)" -ForegroundColor Green
+        Write-Host "`nRemoved $($AllDeletedResources.Count) deleted resource(s)" -ForegroundColor Green
     }
     else 
     {
@@ -150,5 +151,5 @@ if ($AllOrphanedResources.Count -gt 0)
 } 
 else 
 {
-    Write-Host "No orphaned resources found" -ForegroundColor Green
+    Write-Host "No deleted resources found" -ForegroundColor Green
 }

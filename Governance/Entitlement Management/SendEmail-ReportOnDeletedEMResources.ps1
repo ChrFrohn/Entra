@@ -1,4 +1,4 @@
-# Find orphaned resources in Catalogs and send email report
+# Find deleted resources in Catalogs and send email report
 # Checks for deleted groups, applications, and SharePoint sites
 
 ## To be edited for your needs:
@@ -9,8 +9,8 @@ $SaveToSentItems = "false" # Select false if you don't want the mail to be saved
 
 # Mail template settings
 # Subject + Heading text
-$MailSubject = "Orphaned Resources in Entitlement Management Catalogs"
-$Heading1 = "Orphaned Resources Found in Catalogs"
+$MailSubject = "Deleted Resources in Entitlement Management Catalogs"
+$Heading1 = "Deleted Resources Found in Catalogs"
 $Heading2 = "The following resources are still in catalogs but have been deleted from Entra ID or SharePoint"
 
 ### The script - No edit beyond this point ###
@@ -21,9 +21,9 @@ Connect-MgGraph -Identity
 # Get all catalogs
 $Catalogs = Get-MgEntitlementManagementCatalog -All
 
-$AllOrphanedResources = @()
+$AllDeletedResources = @()
 
-Write-Output "Checking catalogs for orphaned resources..."
+Write-Output "Checking catalogs for deleted resources..."
 
 foreach ($catalog in $Catalogs) 
 {
@@ -34,7 +34,7 @@ foreach ($catalog in $Catalogs)
         $OriginSystem = $resource.OriginSystem
         $OriginId = $resource.OriginId
         $DisplayName = $resource.DisplayName
-        $IsOrphaned = $false
+        $IsDeleted = $false
         $ResourceType = ""
         
         # Check if Group still exists
@@ -47,7 +47,7 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         # Check if Application still exists
@@ -60,7 +60,7 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         elseif ($OriginSystem -eq "SharePointOnline") 
@@ -73,13 +73,13 @@ foreach ($catalog in $Catalogs)
             }
             catch 
             {
-                $IsOrphaned = $true
+                $IsDeleted = $true
             }
         }
         
-        if ($IsOrphaned) 
+        if ($IsDeleted) 
         {
-            $AllOrphanedResources += [PSCustomObject]@{
+            $AllDeletedResources += [PSCustomObject]@{
                 Catalog      = $catalog.DisplayName
                 CatalogId    = $catalog.Id
                 ResourceType = $ResourceType
@@ -89,7 +89,7 @@ foreach ($catalog in $Catalogs)
                 ResourceId   = $resource.Id
             }
             
-            Write-Output "Found orphaned resource: $DisplayName ($ResourceType) in $($catalog.DisplayName)"
+            Write-Output "Found deleted resource: $DisplayName ($ResourceType) in $($catalog.DisplayName)"
         }
     }
 }
@@ -171,19 +171,19 @@ Function SendMail
 }
 
 # Build email body
-if ($AllOrphanedResources.Count -gt 0) 
+if ($AllDeletedResources.Count -gt 0) 
 {
-    Write-Output "`nTotal orphaned resources found: $($AllOrphanedResources.Count)"
+    Write-Output "`nTotal deleted resources found: $($AllDeletedResources.Count)"
     
     # Display summary by resource type
-    Write-Output "`nOrphaned Resources Summary:"
-    $Summary = $AllOrphanedResources | Group-Object ResourceType
+    Write-Output "`nDeleted Resources Summary:"
+    $Summary = $AllDeletedResources | Group-Object ResourceType
     $Summary | ForEach-Object {
         Write-Output "  • $($_.Name): $($_.Count) resources"
     }
     
     # Build HTML email body
-    $EmailBody = "<p><b>Total orphaned resources found: $($AllOrphanedResources.Count)</b></p>"
+    $EmailBody = "<p><b>Total deleted resources found: $($AllDeletedResources.Count)</b></p>"
     
     # Add summary section
     $EmailBody += "<h3>Summary by Resource Type:</h3><ul>"
@@ -196,7 +196,7 @@ if ($AllOrphanedResources.Count -gt 0)
     $EmailBody += "<h3>Detailed List:</h3>"
     $EmailBody += "<table><tr><th>Catalog</th><th>Resource Type</th><th>Resource Name</th><th>Origin ID</th></tr>"
     
-    foreach ($resource in $AllOrphanedResources) 
+    foreach ($resource in $AllDeletedResources) 
     {
         $EmailBody += "<tr>"
         $EmailBody += "<td>$($resource.Catalog)</td>"
@@ -213,5 +213,5 @@ if ($AllOrphanedResources.Count -gt 0)
 } 
 else 
 {
-    Write-Output "`nNo orphaned resources found. No email will be sent."
+    Write-Output "`nNo deleted resources found. No email will be sent."
 }
