@@ -11,7 +11,7 @@ $SaveToSentItems = "false" # Select false if you don't want the mail to be saved
 # Subject + Heading text
 $MailSubject = "Deleted Resources in Entitlement Management Catalogs"
 $Heading1 = "Deleted Resources Found in Catalogs"
-$Heading2 = "The following resources are still in catalogs but have been deleted from Entra ID or SharePoint"
+$Heading2 = "The following resources are still in catalogs but have been deleted from Entra ID or SharePoint online"
 
 ### The script - No edit beyond this point ###
 
@@ -94,7 +94,7 @@ foreach ($catalog in $Catalogs)
     }
 }
 
-# Custom Function - Compose email + Send mail
+# Compose email + Send mail
 Function SendMail
 {
     param($EmailBody)
@@ -104,17 +104,17 @@ Function SendMail
     <head>
     <style type='text/css'>
     h1 {
-        color: #8D8100;
+        color: #4E6B60;
         font-family: verdana;
         font-size: 18px;
     }
     h2 {
-        color: #003c46;
+        color: #003C46;
         font-family: verdana;
         font-size: 14px;
     }
     body {
-        color: #003c46;
+        color: #003C46;
         font-family: verdana;
         font-size: 12px;
     }
@@ -124,18 +124,18 @@ Function SendMail
         margin-top: 10px;
     }
     th {
-        background-color: #003c46;
+        background-color: #003C46;
         color: white;
         padding: 8px;
         text-align: left;
-        border: 1px solid #ddd;
+        border: 1px solid #A0A08D;
     }
     td {
         padding: 8px;
-        border: 1px solid #ddd;
+        border: 1px solid #A0A08D;
     }
     tr:nth-child(even) {
-        background-color: #f2f2f2;
+        background-color: #DDDDCB;
     }
     </style>
     </head>
@@ -193,7 +193,6 @@ if ($AllDeletedResources.Count -gt 0)
     $EmailBody += "</ul>"
     
     # Add detailed table
-    $EmailBody += "<h3>Detailed List:</h3>"
     $EmailBody += "<table><tr><th>Catalog</th><th>Resource Type</th><th>Resource Name</th><th>Origin ID</th></tr>"
     
     foreach ($resource in $AllDeletedResources) 
