@@ -1,4 +1,5 @@
 # Remove deleted resources from Entitlement Management catalogs and access packages
+# Please note that this scripts uses Beta graph PowerShell module as well
 
 Connect-MgGraph -Scopes "Group.Read.All", "Application.Read.All", "EntitlementManagement.ReadWrite.All", "Sites.Read.All" -NoWelcome
 
@@ -88,61 +89,71 @@ if ($AllDeletedResources.Count -gt 0)
     
     if ($confirmation -in @("yes", "y", "Y", "Yes", "YES")) 
     {
-        # Step 1: Remove deleted resources from access packages
+        Write-Host "`nRemoving deleted resources from ALL access packages..." -ForegroundColor Cyan
         
-      Foreach ($deletedResource in $AllDeletedResources) 
+        $allAccessPackages = Get-MgBetaEntitlementManagementAccessPackage -ExpandProperty "accessPackageResourceRoleScopes(`$expand=accessPackageResourceRole,accessPackageResourceScope)" -All -ErrorAction Stop
+        
+        Foreach ($deletedResource in $AllDeletedResources) 
         {
-            # Get all access packages in this catalog
-            try 
+            $removedFromPackages = 0
+            
+            Foreach ($accessPackage in $allAccessPackages) 
             {
-                $accessPackages = Get-MgEntitlementManagementAccessPackage -Filter "catalog/id eq '$($deletedResource.CatalogId)'" -ExpandProperty "resourceRoleScopes" -All -ErrorAction Stop
-                
-              Foreach ($accessPackage in $accessPackages) 
+                # Check each resource role scope in the access package
+                if ($accessPackage.AccessPackageResourceRoleScopes) 
                 {
-                    # Check each resource role scope in the access package
-                    if ($accessPackage.ResourceRoleScopes) 
+                    Foreach ($roleScope in $accessPackage.AccessPackageResourceRoleScopes) 
                     {
-                      Foreach ($roleScope in $accessPackage.ResourceRoleScopes) 
+                        # Check if this role scope references the deleted resource
+                        if ($roleScope.AccessPackageResourceScope.OriginId -eq $deletedResource.OriginId) 
                         {
-                            # Check if this role scope references the deleted resource
-                            if ($roleScope.Scope.OriginId -eq $deletedResource.OriginId) 
+                            try 
                             {
-                                try 
-                                {
-                                    #Remove-MgEntitlementManagementAccessPackageResourceRoleScope -AccessPackageId $accessPackage.Id -AccessPackageResourceRoleScopeId $roleScope.Id -ErrorAction Stop
-                                    Write-Host "Removed '$($deletedResource.ResourceName)' from access package '$($accessPackage.DisplayName)'" -ForegroundColor Green
-                                }
-                                catch 
-                                {
-                                    Write-Host "Failed to remove from '$($accessPackage.DisplayName)': $($_.Exception.Message)" -ForegroundColor Red
-                                }
+                                Remove-MgBetaEntitlementManagementAccessPackageResourceRoleScope -AccessPackageId $accessPackage.Id -AccessPackageResourceRoleScopeId $roleScope.Id -ErrorAction Stop
+                                Write-Host "  Removed '$($deletedResource.ResourceName)' from access package '$($accessPackage.DisplayName)'" -ForegroundColor Green
+                                $removedFromPackages++
+                            }
+                            catch 
+                            {
+                                Write-Host "  Failed to remove '$($deletedResource.ResourceName)' from '$($accessPackage.DisplayName)': $($_.Exception.Message)" -ForegroundColor Red
                             }
                         }
                     }
                 }
             }
-            catch 
-            {
-                Write-Host "  Error processing '$($deletedResource.ResourceName)': $($_.Exception.Message)" -ForegroundColor Red
+            
+            if ($removedFromPackages -eq 0) {
+                Write-Host "  Resource '$($deletedResource.ResourceName)' not found in any access packages" -ForegroundColor Yellow
+            } else {
+                Write-Host "  Removed '$($deletedResource.ResourceName)' from $removedFromPackages access package(s)" -ForegroundColor Green
             }
         }
         
-        # Step 2: Remove deleted resources from catalogs
+        Write-Host "`nRemoving deleted resources from catalogs..." -ForegroundColor Cyan
         
-      Foreach ($deletedResource in $AllDeletedResources) 
+        Foreach ($deletedResource in $AllDeletedResources) 
         {
             try 
             {
-                #Remove-MgEntitlementManagementCatalogResource -AccessPackageCatalogId $deletedResource.CatalogId -AccessPackageResourceId $deletedResource.ResourceId -ErrorAction Stop
-                Write-Host "Removed '$($deletedResource.ResourceName)' from catalog '$($deletedResource.Catalog)'" -ForegroundColor Green
+                $removeParams = @{
+                    requestType = "adminRemove"
+                    resource = @{
+                        originId = $deletedResource.OriginId
+                        originSystem = $deletedResource.OriginSystem
+                    }
+                    catalog = @{ id = $deletedResource.CatalogId }
+                }
+                
+                $null = New-MgEntitlementManagementResourceRequest -BodyParameter $removeParams -ErrorAction Stop
+                Write-Host "  Removed '$($deletedResource.ResourceName)' from catalog '$($deletedResource.Catalog)'" -ForegroundColor Green
             }
             catch 
             {
-                Write-Host "Failed to remove '$($deletedResource.ResourceName)': $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "  Failed to remove '$($deletedResource.ResourceName)' from catalog: $($_.Exception.Message)" -ForegroundColor Red
             }
         }
         
-        Write-Host "`nRemoved $($AllDeletedResources.Count) deleted resource(s)" -ForegroundColor Green
+        Write-Host "`nCleanup completed. Total resources processed: $($AllDeletedResources.Count)" -ForegroundColor Green
     }
     else 
     {
