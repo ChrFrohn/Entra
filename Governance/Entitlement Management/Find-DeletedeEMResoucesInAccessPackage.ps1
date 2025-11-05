@@ -2,7 +2,7 @@
 # Gets all groups from a specific access package and checks their types
 
 # Set the Access Package ID here
-$accessPackageId = "04d2a56c-cdf3-4c48-afea-d3cf3d49d497"
+$accessPackageId = ""
 
 Write-Host "Getting groups from access package..." -ForegroundColor Yellow
 
