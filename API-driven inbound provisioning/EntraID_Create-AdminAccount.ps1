@@ -109,7 +109,6 @@ $AdminBulkRequestId = [System.Guid]::NewGuid().ToString()
 
 # Create SCIM JSON payload for Entra ID admin user creation
 # First operation: Register the manager with the provisioning engine so it can resolve the reference
-# This is required when the manager is an on-prem synced user who was never processed by this API-driven app
 # Second operation: Create the admin account with manager reference
         $json = @"
     {
