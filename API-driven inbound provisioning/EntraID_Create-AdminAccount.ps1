@@ -103,17 +103,35 @@ $JSONNAMEdisplayName = $UserDisplayName + " - Admin account"
 $employeeId = $UserResponse.employeeId
 $JSONemployeeNumber = "AA" + $employeeId
 
-# Generate unique bulk request ID for SCIM operation
-$BulkRequestId = [System.Guid]::NewGuid().ToString()
+# Generate unique bulk request IDs for SCIM operations
+$ManagerBulkRequestId = [System.Guid]::NewGuid().ToString()
+$AdminBulkRequestId = [System.Guid]::NewGuid().ToString()
 
 # Create SCIM JSON payload for Entra ID admin user creation
+# First operation: Register the manager with the provisioning engine so it can resolve the reference
+# This is required when the manager is an on-prem synced user who was never processed by this API-driven app
+# Second operation: Create the admin account with manager reference
         $json = @"
     {
         "schemas": ["urn:ietf:params:scim:api:messages:2.0:BulkRequest"],
         "Operations": [
         {
             "method": "POST",
-            "bulkId": "$BulkRequestId",
+            "bulkId": "$ManagerBulkRequestId",
+            "path": "/Users",
+            "data": {
+                "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User",
+                "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"],
+                "externalId": "$employeeId",
+                "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
+                    "employeeNumber": "$employeeId"
+                },
+                "active": true
+            }
+        },
+        {
+            "method": "POST",
+            "bulkId": "$AdminBulkRequestId",
             "path": "/Users",
             "data": {
                 "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User",
