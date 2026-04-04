@@ -6,10 +6,11 @@ param (
 	[string]$EmployeeLeaveDateTime
 )
 
-# Service Principal authentication
+# Service Principal authentication details - replace with your own values
 $ClientID = ""
 $TenantID = ""
 $ClientSecret = ""
+
 
 try
 {
