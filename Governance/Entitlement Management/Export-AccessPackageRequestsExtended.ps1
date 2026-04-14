@@ -8,11 +8,11 @@
 	answers to access package questions. Exports the results to a CSV file.
 
 .PARAMETER AccessPackageId
-	The ID (GUID) of the access package to export requests for.
+	The Object ID of the access package to export requests for.
 	Example: "a914b616-e04e-476b-aa37-91038f0b165b"
 
 .PARAMETER TenantId
-	The Tenant ID (GUID) of the Entra ID tenant to connect to.
+	The Tenant ID of the Entra ID tenant to connect to.
 	Example: "christianfrohn.onmicrosoft.com" or "12345678-1234-1234-1234-123456789012"
 
 .PARAMETER OutputCsvPath
