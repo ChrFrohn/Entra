@@ -13,18 +13,18 @@
 
 .PARAMETER TenantId
 	The Tenant ID (GUID) of the Entra ID tenant to connect to.
-	Example: "contoso.onmicrosoft.com" or "12345678-1234-1234-1234-123456789012"
+	Example: "christianfrohn.onmicrosoft.com" or "12345678-1234-1234-1234-123456789012"
 
 .PARAMETER OutputCsvPath
 	The path for the exported CSV file.
 	Default: ".\AccessPackageRequests-Extended.csv"
 
 .EXAMPLE
-	.\Export-AccessPackageRequestsExtended.ps1 -AccessPackageId "a914b616-e04e-476b-aa37-91038f0b165b" -TenantId "contoso.onmicrosoft.com"
+	.\Export-AccessPackageRequestsExtended.ps1 -AccessPackageId "a914b616-e04e-476b-aa37-91038f0b165b" -TenantId "christianfrohn.onmicrosoft.com"
 	Exports all requests for the specified access package to the default CSV path.
 
 .EXAMPLE
-	.\Export-AccessPackageRequestsExtended.ps1 -AccessPackageId "a914b616-e04e-476b-aa37-91038f0b165b" -TenantId "contoso.onmicrosoft.com" -OutputCsvPath "C:\Exports\Requests.csv"
+	.\Export-AccessPackageRequestsExtended.ps1 -AccessPackageId "a914b616-e04e-476b-aa37-91038f0b165b" -TenantId "christianfrohn.onmicrosoft.com" -OutputCsvPath "C:\Exports\Requests.csv"
 	Exports all requests to a custom file path.
 
 .NOTES
