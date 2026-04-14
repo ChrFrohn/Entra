@@ -10,6 +10,6 @@ The code and documentation in this repository are provided "as is" without warra
 
 ## Table of Contents
 
-### KQL
-- [ServicePrincipal-SignIn-Ipaddress-sum.kql](https://github.com/ChrFrohn/Entra-ID/blob/main/Workload%20ID/ServicePrincipal-SignIn-Ipaddress-sum.kql)
-- [ServicePrincipal-SignIns-Pr-Ipadress.kql](https://github.com/ChrFrohn/Entra-ID/blob/main/Workload%20ID/ServicePrincipal-SignIns-Pr-Ipadress.kql)
+### PowerShell
+- [AddGraphPermissionsToManagedId.ps1](https://github.com/ChrFrohn/Entra/blob/main/Workload%20ID/AddGraphPermissionsToManagedId.ps1)
+- [GetExpiringSecrets.ps1](https://github.com/ChrFrohn/Entra/blob/main/Workload%20ID/GetExpiringSecrets.ps1)

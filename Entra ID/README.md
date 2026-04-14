@@ -11,10 +11,9 @@ The code and documentation in this repository are provided "as is" without warra
 ## Table of Contents
 
 ### PowerShell
-- [GetEmployeeHireOrLeaveDateTime.ps1](GetEmployeeHireOrLeaveDateTime.ps1) - Script to get employee hire or leave date and time using HTTP requests.
-- [GetEmployeeHireOrLeaveDateTime2.ps1](GetEmployeeHireOrLeaveDateTime2.ps1) - Script to get employee hire or leave date and time using PowerShell SDK
-
-### KQL
-- [UserRemovedFromGroupByAdmin.kql](UserRemovedFromGroupByAdmin.kql) - Query to find users removed from group by admin.
-- [FindUserAddedToGroupViaReprocess.kql](FindUserAddedToGroupViaReprocess.kql) - Query to find users added to group via Reprocess from Entitle management.
-- [FilterSignInLogsPerPolicy.kql](FilterSignInLogsPerPolicy.kql) - Query to filter sign-in logs per Conditional Access policy.
+- Blog post: [Configure EmployeeHireDate and EmployeeLeaveDateTime in Active Directory to be used with Microsoft Entra ID Governance](https://www.christianfrohn.dk/2024/05/02/configure-employeehiredate-and-employeeleavedatetime-in-active-directory-to-be-used-with-microsoft-entra-id-governance/)
+  - [GetEmployeeHireOrLeaveDateTime.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/GetEmployeeHireOrLeaveDateTime.ps1) - Script to get employee hire or leave date and time using HTTP requests.
+  - [GetEmployeeHireOrLeaveDateTime2.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/GetEmployeeHireOrLeaveDateTime2.ps1) - Script to get employee hire or leave date and time using PowerShell SDK
+  - [Set-EmployeeLeaveDateTime.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/Set-EmployeeLeaveDateTime.ps1) - Script to set employee leave date and time
+- [GetEntraGroupId.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/GetEntraGroupId.ps1) - Script to get Entra group ID
+- [Set-EmployeeDivision.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/Set-EmployeeDivision.ps1) - Script to set employee division

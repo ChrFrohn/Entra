@@ -15,18 +15,19 @@ The code and documentation in this repository are provided "as is" without warra
 ## Table of Contents
 
 ### JSON
-- [JSONpayload-withExtAttribute.json](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/JSONpayload-withExtAttribute.json) - JSON payload file to update custom attribute mapping (Sample is extensionAttribute1)
-- [JSONpayload-withmanager.json](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/JSONpayload-withmanager.json) - JSON payload file to update manager of a user in Active Directory
-- [JSONpayload.json](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/JSONpayload.json) - Default JSON payload to create/update a user
+- [JSONpayload-withExtAttribute.json](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/JSONpayload-withExtAttribute.json) - JSON payload file to update custom attribute mapping (Sample is extensionAttribute1)
+- [JSONpayload-withmanager.json](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/JSONpayload-withmanager.json) - JSON payload file to update manager of a user in Active Directory
+- [JSONpayload.json](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/JSONpayload.json) - Default JSON payload to create/update a user
 
 ### PowerShell
-- [UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1) - Sample to send JSON to the API-driven inbound provisioning service
-- [UploadUserDataToTheInboundProvisioningAPI.ps1](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/UploadUserDataToTheInboundProvisioningAPI.ps1) - Sample to send payload (without JSON payload in it)
-- [CreateUserFromHRDBWithAPIProv.ps1](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/CreateUserFromHRDBWithAPIProv.ps1) - Script to create a user from HR database with API provisioning
+- [AD_Create-AdminAccount.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/AD_Create-AdminAccount.ps1) - Script to create an admin account in Active Directory
+- [API_ImportUserFromHRAPI.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/API_ImportUserFromHRAPI.ps1) - Script to import user from HR API
+- [CreateUserFromHRDBWithAPIProv.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/CreateUserFromHRDBWithAPIProv.ps1) - Script to create a user from HR database with API provisioning
+- [EntraID_Create-AdminAccount.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/EntraID_Create-AdminAccount.ps1) - Script to create an admin account in Entra ID
+- [MoveUserToOUBasedOnAttributeValue.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/MoveUserToOUBasedOnAttributeValue.ps1) - Script to move user to OU based on attribute value
+- [UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/UploadUserDataToTheInboundProvisioningAPI-WithJSON.ps1) - Sample to send JSON to the API-driven inbound provisioning service
+- [UploadUserDataToTheInboundProvisioningAPI.ps1](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/UploadUserDataToTheInboundProvisioningAPI.ps1) - Sample to send payload (without JSON payload in it)
 
 ### SQL
-- [CreateAndInsertData-API-Driven-Sample.SQL](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/CreateAndInsertData-API-Driven-Sample.SQL) - SQL script to create and insert data for API-driven provisioning
-- [CreateTableForAPI-Driven.sql](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/CreateTableForAPI-Driven.sql) - SQL script to create table for API-driven provisioning
-
-### KQL
-- [GetAllCreatedUserFromAPIDrivenUserProv.kql](https://github.com/ChrFrohn/Entra-ID/blob/main/API-driven%20inbound%20provisioning/GetAllCreatedUserFromAPIDrivenUserProv.kql) - KQL query to get all created users from API-driven user provisioning
+- [CreateAndInsertData-API-Driven-Sample.SQL](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/CreateAndInsertData-API-Driven-Sample.SQL) - SQL script to create and insert data for API-driven provisioning
+- [CreateTableForAPI-Driven.sql](https://github.com/ChrFrohn/Entra/blob/main/API-driven%20inbound%20provisioning/CreateTableForAPI-Driven.sql) - SQL script to create table for API-driven provisioning
