@@ -2,7 +2,7 @@
 
 Import-Module Microsoft.Graph.Identity.Governance
 
-Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All"
+Connect-MgGraph -Scopes "EntitlementManagement.ReadWrite.All" -NoWelcome
 
 # Access package parameters
 $AccessPackageDisplayName = "" # Sample: "Department X"
@@ -13,7 +13,7 @@ $AccessPackageCatalogId = "" # Sample: "00000000-0000-0000-0000-000000000000"
 $RequestPolicyName = "" # Sample: "Request policy"
 $PolicyDescription = "" # Sample: "Request policy for Department X"
 $membershipRule = "allMemberUsers" # "allMemberUsers", "specificAllowedTargets", "allConfiguredConnectedOrganizationUsers", "notSpecified"
-$Approver = "" # Object ID of the user in Entra ID / Change to groupId for group
+$Approver = "" # Object ID (GUID) of the user in Entra ID / Change to groupId for group
 
 # Auto assignment policy parameters
 $AutoPolicyName = "" # Sample: "Auto policy"
@@ -97,7 +97,7 @@ $AutoPolicyParameters = @{
 	SpecificAllowedTargets = @(
 		@{
 			"@odata.type" = "#microsoft.graph.attributeRuleMembers"
-			description = $PolicyDescription
+			description = $AutoPolicyDescription
 			membershipRule = $AutoAssignmentPolicyFilter
 		}
 	)
@@ -107,22 +107,26 @@ $AutoPolicyParameters = @{
 	AccessPackage = @{
 		Id = $NewAccessPackage.Id
 	}
-	customExtensionStageSettings = @(
-        @{
-            stage = "assignmentRequestGranted"
-            customExtension = @{
-                "@odata.type" = "#microsoft.graph.accessPackageAssignmentRequestWorkflowExtension"
-                id = $CustomExtensionId
-            }
-        }
-        @{
-            stage = "assignmentRequestRemoved"
-            customExtension = @{
-                "@odata.type" = "#microsoft.graph.accessPackageAssignmentRequestWorkflowExtension"
-                id = $CustomExtensionId
-            }
-        }
-    )
+}
+
+if ($CustomExtensionId -ne "")
+{
+	$AutoPolicyParameters["customExtensionStageSettings"] = @(
+		@{
+			stage = "assignmentRequestGranted"
+			customExtension = @{
+				"@odata.type" = "#microsoft.graph.accessPackageAssignmentRequestWorkflowExtension"
+				id = $CustomExtensionId
+			}
+		}
+		@{
+			stage = "assignmentRequestRemoved"
+			customExtension = @{
+				"@odata.type" = "#microsoft.graph.accessPackageAssignmentRequestWorkflowExtension"
+				id = $CustomExtensionId
+			}
+		}
+	)
 }
 
 New-MgEntitlementManagementAssignmentPolicy -BodyParameter $AutoPolicyParameters
