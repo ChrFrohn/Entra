@@ -17,3 +17,4 @@ The code and documentation in this repository are provided "as is" without warra
   - [Set-EmployeeLeaveDateTime.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/Set-EmployeeLeaveDateTime.ps1) - Script to set employee leave date and time
 - [GetEntraGroupId.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/GetEntraGroupId.ps1) - Script to get Entra group ID
 - [Set-EmployeeDivision.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/Set-EmployeeDivision.ps1) - Script to set employee division
+- [Get-MemberOfDynamicGroups.ps1](https://github.com/ChrFrohn/Entra/blob/main/Entra%20ID/Get-MemberOfDynamicGroups.ps1) - Script to list dynamic membership groups that use the memberOf operator, which is retired after November 3, 2026
